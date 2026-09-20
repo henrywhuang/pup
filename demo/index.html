@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="PUP: compact vector characters from SVG and motion references. Compare real WebP, Rive and PUP animations side by side.">
+  <title>PUP — small files, real motion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="PUP home"><span class="brand-mark">p</span><strong>pup</strong><span class="brand-note">vector motion</span></a>
+    <nav><a href="#make">Make a puppet</a><a href="https://github.com/henrywhuang/pup" target="_blank" rel="noopener">GitHub ↗</a></nav>
+  </header>
+  <section class="intro">
+    <div><div class="eyebrow">A SMALL FORMAT FOR EXPRESSIVE CHARACTERS</div><h1>Small files.<br><span>Real motion.</span></h1><p>Keep the curves. Pack the character, its rig and its actions into one <code>.pup</code>. No WASM in the PUP player.</p></div>
+    <aside class="runtime-card"><span class="tiny-label">PUP PLAYER · GZIP ESTIMATE</span><strong id="runtime-size">…</strong><span>Canvas + native SVG renderers<br>0 runtime dependencies</span><a href="#details">See what is measured ↓</a></aside>
+  </section>
+
+  <section class="lab" aria-label="Animation comparison">
+    <div class="mode-row" role="tablist" aria-label="Comparison source">
+      <button role="tab" id="mode-webp" data-mode="webp" aria-selected="true"><span>01</span> WebP / PUP</button>
+      <button role="tab" id="mode-rive" data-mode="rive" aria-selected="false"><span>02</span> Rive / PUP</button>
+      <button role="tab" id="mode-skin" data-mode="skin" aria-selected="false"><span>03</span> SVG / PUP</button>
+    </div>
+    <div class="toolbar">
+      <div class="selects">
+        <label>Character <select id="character"><option value="fox">Fox</option><option value="raccoon">Raccoon</option></select></label>
+        <div class="segmented" aria-label="Action"><button data-action="correct" aria-pressed="true">Correct</button><button data-action="wrong" aria-pressed="false">Wrong</button></div>
+      </div>
+      <div class="view-tools">
+        <div class="segmented" aria-label="Comparison view"><button data-view="side" aria-pressed="true">Side by side</button><button data-view="overlay" aria-pressed="false">Overlay</button><button data-view="diff" aria-pressed="false">Difference</button></div>
+        <button id="background" class="swatch" aria-label="Change stage background" title="Change background"></button>
+      </div>
+    </div>
+    <div class="stages" id="stages" data-background="warm">
+      <article class="stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
+      <article class="stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div></article>
+      <div id="loading" role="status" hidden>Loading the comparison…</div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-heading"><span><i class="status-dot"></i><b id="phase">Ready</b><small id="frame-label">FRAME 01</small></span><output id="time">0.000 / 1.083 s</output></div>
+      <input type="range" id="seek" min="0" max="1083" value="0" step="1" aria-label="Animation time">
+      <div class="transport">
+        <div class="playback"><button class="primary" id="play" aria-label="Play animation">▶ <span>Play</span></button><button class="icon" id="restart" aria-label="Restart animation">↻</button><button class="icon" id="previous" aria-label="Previous reference frame">‹</button><button class="icon" id="next" aria-label="Next reference frame">›</button><select id="speed" aria-label="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option></select></div>
+        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label><a id="download" class="download" href="#" download>Download .pup ↗</a></div>
+      </div>
+    </div>
+    <p id="comparison-note" class="comparison-note">The PUP file contains both actions. The source file shown above contains the selected action only.</p>
+    <div id="error" role="alert" hidden></div>
+  </section>
+
+  <section class="facts" id="details">
+    <div><span class="tiny-label">VECTOR DATA</span><strong id="geometry">…</strong><p>Filled paths, a small rig and keyframes. No raster frames inside the PUP file.</p></div>
+    <div><span class="tiny-label">RUNTIME DISTRIBUTIONS</span><strong id="runtime-comparison">…</strong><p id="runtime-note">Measured build artifacts; gzip is calculated per file. This is a size comparison, not a performance benchmark.</p></div>
+    <div><span class="tiny-label">SAME INPUTS, HONEST COMPARISON</span><strong>Inspect every frame.</strong><p id="fidelity-note">Some shapes were intentionally cleaned up: round eyes, smooth smiles and continuous expressions. Pixel differences also include rasterization.</p></div>
+  </section>
+
+  <section id="make" class="make">
+    <div class="section-title"><div><span class="eyebrow">START WITH WHAT YOU ALREADY HAVE</span><h2>A WebP reference.<br>An SVG character.</h2></div><p>The reference tells you how it moves.<br>The SVG tells you what it is made of.</p></div>
+    <div class="steps"><article><span>01 / OBSERVE</span><h3>Extract the motion.</h3><p>Prepare a scrubber sheet, original frame timing and an inventory of SVG part IDs.</p><code>pup prepare reference.webp artwork.svg work/</code></article><article><span>02 / AUTHOR</span><h3>Keep the curves simple.</h3><p>With an agent or by hand, map parts to a rig and editable keyframes. Preparation alone does not infer a finished animation.</p><a href="https://github.com/henrywhuang/pup/blob/main/prompts/rebuild-pup.md" target="_blank" rel="noopener">Use the reconstruction prompt ↗</a></article><article><span>03 / PACK</span><h3>Ship one puppet.</h3><p>Compile the authored SVG and motion into PUP. Load it in Canvas or render it as native SVG.</p><code>pup import rig.svg motion.json animation.pup</code></article></div>
+    <div class="code-example"><div><span class="tiny-label">IN YOUR APP</span><p>Named actions.<br>A small API.</p></div><pre><code>import { CanvasPlayer } from '@henrywhuang/pup';
+
+const actor = await CanvasPlayer.load(canvas, 'fox.pup');
+actor.play('correct');
+actor.play('wrong');
+actor.dispose();</code></pre></div>
+  </section>
+  <footer><span>PUP / experimental format · v0.1</span><span>Code: MIT · Demo art: see <a href="ASSETS.md">asset terms</a> · <a href="https://rive.app/community/doc/low-level-api-usage/doctAfBY6v3P" target="_blank" rel="noopener">Rive runtime reference ↗</a></span></footer>
+</main>
+<script type="module" src="APP_SCRIPT"></script>
+</body>
+</html>

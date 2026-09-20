@@ -1,0 +1,42 @@
+{
+  "name": "@henrywhuang/pup",
+  "version": "0.1.0",
+  "description": "Compact vector puppets with named actions. SVG + motion to PUP, with WebP and Rive comparison demos.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "pup": "./bin/pup.mjs"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./rig": "./src/rig.js",
+    "./format": "./src/format.js",
+    "./compiler": "./tools/compiler.mjs"
+  },
+  "files": [
+    "src",
+    "bin",
+    "tools/compiler.mjs",
+    "tools/optimize.mjs",
+    "tools/prepare.py",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "dev": "node tools/build.mjs && node tools/serve.mjs dist",
+    "test": "node --test test/*.test.mjs",
+    "examples": "node tools/build-examples.mjs"
+  },
+  "devDependencies": {
+    "@rive-app/canvas-advanced": "2.42.2",
+    "esbuild": "0.28.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/henrywhuang/pup.git"
+  }
+}

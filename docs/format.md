@@ -1,0 +1,58 @@
+# SVG, motion and PUP1
+
+PUP1 is an experimental little-endian binary containing an artboard, transform
+hierarchy, shared paths, paints, clipping, optional path-follow/skinning data,
+named actions and a default playlist. It is not yet a stable interchange standard.
+
+## SVG
+
+Use semantic, unique IDs. Groups named `behind` and `front` map to layers 0
+and 1. A host may draw a card between them. Transforms use the order
+`translate(x y) rotate(degrees) scale(x y)`.
+
+The importer accepts a focused SVG shape/path subset with solid fills/strokes
+and clip paths. Convert unsupported paint/filter/text effects to supported
+geometry before import. Do not silently drop visible artwork.
+
+- `data-follow` and `data-follow-at` attach a shape to an outline.
+- `data-bend` names deformation pivots.
+- `data-bend-bind` stores one affine bind matrix per pivot.
+- `data-bend-weights` stores weights for each vertex and both handles.
+
+See the checked-in rigs for complete examples. Keep geometry sparse and
+recognizable; avoid tracing dense contours for every animation frame.
+
+## Motion
+
+```json
+{
+  "clips": {
+    "correct": {
+      "fps": 1000,
+      "frames": 1083,
+      "tracks": {
+        "head": { "ty": [[0, 120], [250, 132, "ease"], [1083, 120]] }
+      }
+    }
+  },
+  "play": [{"clip": "correct"}]
+}
+```
+
+Keys and duration use the declared fps; runtime API time is always seconds.
+Transform channels are `tx`, `ty`, `rotate`, `sx`, `sy` and `opacity`.
+Keys are `[frame, value, easing?]`. Omitted easing is linear; supported easing
+includes `hold`, `ease`, `cubic(x1,y1,x2,y2)` and `elastic(amplitude,period)`.
+
+A playlist may cut into another clip with `{"clip":"name","cut":0.5}`.
+Applications may instead start actions by name.
+
+The compiler header documents per-vertex position and handle channels.
+The examples demonstrate pivot-driven expression morphs.
+
+## Packing
+
+`pup import` performs lossless packing: static geometry sharing, duplicate-track
+sharing, redundant constant keys and unanimated identity nodes are consolidated.
+Tests compare world-space geometry against the unoptimized representation.
+No bitmap frames are stored in the PUP examples.
