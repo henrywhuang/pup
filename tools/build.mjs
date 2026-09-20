@@ -12,7 +12,7 @@ const root = path.resolve(import.meta.dirname, '..');
 process.chdir(root);
 const dist = path.join(root, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
-for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'vendor', 'frames']) {
+for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'vendor', 'frames', 'downloads']) {
   fs.mkdirSync(path.join(dist, dir), { recursive: true });
 }
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').slice(0, 12);
@@ -72,6 +72,34 @@ for (const action of ['correct', 'wrong']) {
     ...timing, original: webp, sheet: 'frames/' + action + '/frames.webp?v=' + hash(frameBytes),
   };
 }
+const downloads = [];
+for (const group of ['quiz', 'peek']) for (const character of ['fox', 'raccoon']) {
+  downloads.push({
+    ...manifest[group][character].pup,
+    name: character + '-' + (group === 'quiz' ? 'reactions' : 'peek') + '.pup',
+    character: character === 'fox' ? 'Fox' : 'Raccoon',
+    title: group === 'quiz' ? 'Reactions' : 'Card peek',
+    detail: group === 'quiz' ? 'Correct + wrong · two actions' : 'Peek + return · two layers',
+  });
+}
+const bundlePath = 'downloads/pup-examples.zip';
+const bundleResult = spawnSync(process.env.PUP_PYTHON || 'python3', ['tools/build-downloads.py'], {
+  input: JSON.stringify({
+    output: path.join(dist, bundlePath),
+    files: [
+      ...downloads.map(asset => ({ name: asset.name, path: path.join(dist, asset.url.split('?')[0]) })),
+      { name: 'ASSETS.md', path: path.join(root, 'ASSETS.md') },
+    ],
+  }),
+  encoding: 'utf8',
+});
+if (bundleResult.error) throw bundleResult.error;
+if (bundleResult.status !== 0) throw new Error(bundleResult.stderr || 'Could not build PUP downloads');
+const bundleBytes = fs.readFileSync(path.join(dist, bundlePath));
+manifest.downloads = {
+  files: downloads,
+  bundle: { ...stats(bundleBytes), url: bundlePath + '?v=' + hash(bundleBytes) },
+};
 const manifestBytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n');
 const manifestName = 'manifest-' + hash(manifestBytes) + '.json';
 fs.writeFileSync(path.join(dist, manifestName), manifestBytes);
@@ -80,8 +108,21 @@ const app = await build({ entryPoints: ['demo/main.js'], bundle: true, write: fa
   define: { __MANIFEST__: JSON.stringify(manifestName) } });
 const appBytes = app.outputFiles[0].contents, appName = 'app-' + hash(appBytes) + '.js';
 fs.writeFileSync(path.join(dist, appName), appBytes);
-fs.copyFileSync('demo/style.css', path.join(dist, 'style.css'));
-fs.writeFileSync(path.join(dist, 'index.html'), fs.readFileSync('demo/index.html', 'utf8').replace('APP_SCRIPT', appName));
+const stylesheet = copy('demo/style.css', 'style.css');
+const size = bytes => (bytes / 1024).toFixed(1) + ' KiB';
+const cards = downloads.map(asset =>
+  '<article class="download-card"><div><span class="tiny-label">' + asset.character +
+  '</span><h3>' + asset.title + '</h3><p>' + asset.detail + '</p><code>' + asset.name +
+  '</code></div><a class="download" href="' + asset.url + '" download="' + asset.name +
+  '" aria-label="Download ' + asset.name + '">↓ .pup<span>' + size(asset.bytes) + '</span></a></article>',
+).join('\n');
+const html = fs.readFileSync('demo/index.html', 'utf8')
+  .replace('APP_SCRIPT', appName)
+  .replace('style.css', stylesheet.url)
+  .replace('DOWNLOAD_CARDS', cards)
+  .replace('DOWNLOAD_BUNDLE_URL', manifest.downloads.bundle.url)
+  .replace('DOWNLOAD_BUNDLE_SIZE', size(bundleBytes.length));
+fs.writeFileSync(path.join(dist, 'index.html'), html);
 for (const file of ['LICENSE', 'LICENSE-RIVE.txt', 'ASSETS.md']) if (fs.existsSync(file)) fs.copyFileSync(file, path.join(dist, file));
 fs.writeFileSync(path.join(dist, '.nojekyll'), '');
 console.log('PUP runtime: ' + pupRuntime.bytes + ' B raw / ' + pupRuntime.gzip + ' B gzip');

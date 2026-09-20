@@ -171,6 +171,8 @@ async function select() {
   const version = ++loadVersion;
   state.loading = true; state.time = 0; state.last = null;
   $('#loading').hidden = false; $('#error').hidden = true;
+  $('#download').removeAttribute('href');
+  $('#download').setAttribute('aria-disabled', 'true');
   if (state.mode === 'webp') state.character = 'fox';
   if (state.mode === 'skin') state.character = 'raccoon';
   if (state.mode === 'rive') state.renderer = 'canvas';
@@ -215,6 +217,8 @@ async function select() {
     current = next;
     $('#svg-output').replaceChildren(...(next.svg ? [next.svg.svg] : []));
     $('#download').download = state.character + '-' + (state.mode === 'rive' ? 'peek' : 'reactions') + '.pup';
+    $('#download').setAttribute('aria-label', 'Download ' + $('#download').download);
+    $('#download').removeAttribute('aria-disabled');
     state.loading = false; $('#loading').hidden = true;
     controls(); render();
   } catch (error) {

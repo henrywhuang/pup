@@ -7,6 +7,7 @@ keyframes, layered drawing and continuous path deformation. The player uses
 Canvas or native SVG, with no WASM and no runtime package dependencies.
 
 [Live comparison](https://henrywhuang.github.io/pup/) ·
+[Download PUP files](https://henrywhuang.github.io/pup/#downloads) ·
 [中文说明](README.zh-CN.md) · [Authoring guide](docs/authoring.md)
 
 ## Real comparisons
@@ -20,6 +21,10 @@ Canvas or native SVG, with no WASM and no runtime package dependencies.
 Sizes are calculated from real files at build time. Runtime distributions and
 animation assets are reported separately. PUP is a focused character player;
 Rive provides a much broader editor and runtime system.
+
+The demo has a **Download PUP** button below the current animation. Its
+Downloads section offers all four example puppets individually or in one ZIP.
+Each reaction file contains both the correct and wrong actions.
 
 ## Run
 

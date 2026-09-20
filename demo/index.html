@@ -11,7 +11,7 @@
 <main>
   <header class="topbar">
     <a class="brand" href="./" aria-label="PUP home"><span class="brand-mark">p</span><strong>pup</strong><span class="brand-note">vector motion</span></a>
-    <nav><a href="#make">Make a puppet</a><a href="https://github.com/henrywhuang/pup" target="_blank" rel="noopener">GitHub ↗</a></nav>
+    <nav><a href="#downloads">Downloads</a><a href="#make">Make a puppet</a><a href="https://github.com/henrywhuang/pup" target="_blank" rel="noopener">GitHub ↗</a></nav>
   </header>
   <section class="intro">
     <div><div class="eyebrow">A SMALL FORMAT FOR EXPRESSIVE CHARACTERS</div><h1>Small files.<br><span>Real motion.</span></h1><p>Keep the curves. Pack the character, its rig and its actions into one <code>.pup</code>. No WASM in the PUP player.</p></div>
@@ -36,7 +36,7 @@
     </div>
     <div class="stages" id="stages" data-background="warm">
       <article class="stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
-      <article class="stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div></article>
+      <article class="stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot stage-download"><div class="asset-meta"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div><a id="download" class="download download-primary" href="#" download>↓ Download PUP</a></div></article>
       <div id="loading" role="status">Loading the comparison…</div>
     </div>
     <div class="timeline">
@@ -44,7 +44,7 @@
       <input type="range" id="seek" min="0" max="1083" value="0" step="1" aria-label="Animation time">
       <div class="transport">
         <div class="playback"><button class="primary" id="play" aria-label="Play animation">▶ <span>Play</span></button><button class="icon" id="restart" aria-label="Restart animation">↻</button><button class="icon" id="previous" aria-label="Previous reference frame">‹</button><button class="icon" id="next" aria-label="Next reference frame">›</button><select id="speed" aria-label="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option></select></div>
-        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label><a id="download" class="download" href="#" download>Download .pup ↗</a></div>
+        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label></div>
       </div>
     </div>
     <p id="comparison-note" class="comparison-note">The PUP file contains both actions. The source file shown above contains the selected action only.</p>
@@ -55,6 +55,12 @@
     <div><span class="tiny-label">VECTOR DATA</span><strong id="geometry">…</strong><p>Filled paths, a small rig and keyframes. No raster frames inside the PUP file.</p></div>
     <div><span class="tiny-label">RUNTIME DISTRIBUTIONS</span><strong id="runtime-comparison">…</strong><p id="runtime-note">Measured build artifacts; gzip is calculated per file. This is a size comparison, not a performance benchmark.</p></div>
     <div><span class="tiny-label">SAME INPUTS, HONEST COMPARISON</span><strong>Inspect every frame.</strong><p id="fidelity-note">Some shapes were intentionally cleaned up: round eyes, smooth smiles and continuous expressions. Pixel differences also include rasterization.</p></div>
+  </section>
+
+  <section id="downloads" class="downloads" aria-labelledby="downloads-title">
+    <div class="section-title"><div><span class="eyebrow">TAKE THE PUPPETS WITH YOU</span><h2 id="downloads-title">Download the animations.</h2><p>Choose one PUP, or get all four in a ZIP.<br>Each reaction file includes both Correct and Wrong.</p></div><a class="download download-primary bundle-download" href="DOWNLOAD_BUNDLE_URL" download="pup-examples.zip">↓ Download all <span>ZIP · DOWNLOAD_BUNDLE_SIZE</span></a></div>
+    <div class="download-grid">DOWNLOAD_CARDS</div>
+    <p class="download-note">Play these files with the <a href="https://github.com/henrywhuang/pup#player">PUP player</a>. Demo artwork: <a href="ASSETS.md">asset terms</a>.</p>
   </section>
 
   <section id="make" class="make">

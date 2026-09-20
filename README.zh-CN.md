@@ -5,6 +5,9 @@
 
 [在线对照](https://henrywhuang.github.io/pup/) · [English](README.md)
 
+[下载 PUP 动画](https://henrywhuang.github.io/pup/#downloads)：预览下方可以下载当前角色，
+下载区提供四个 PUP 的独立下载及 ZIP 打包下载。每个答题动画文件同时包含答对和答错动作。
+
 ## 三种真实对照
 
 - **WebP / PUP**：原始狐狸 WebP 与矢量重建，同步播放、逐帧、叠加和像素差异。
