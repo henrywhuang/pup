@@ -281,6 +281,8 @@ function tick(now) {
   requestAnimationFrame(tick);
 }
 await select();
+$('.lab').inert = false;
+$('.lab').setAttribute('aria-busy', 'false');
 if (new URLSearchParams(location.search).has('debug')) {
   window.__pupDemo = { state, manifest, get current() { return current; }, render };
 }
@@ -289,6 +291,9 @@ requestAnimationFrame(tick);
 
 }
 main().catch(error => {
+  document.querySelector('.lab').inert = false;
+  document.querySelector('.lab').setAttribute('aria-busy', 'false');
+  document.querySelector('#loading').hidden = true;
   document.querySelector("#error").hidden = false;
   document.querySelector("#error").textContent = error.message;
   console.error(error);

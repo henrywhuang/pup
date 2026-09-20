@@ -18,7 +18,7 @@
     <aside class="runtime-card"><span class="tiny-label">PUP PLAYER · GZIP ESTIMATE</span><strong id="runtime-size">…</strong><span>Canvas + native SVG renderers<br>0 runtime dependencies</span><a href="#details">See what is measured ↓</a></aside>
   </section>
 
-  <section class="lab" aria-label="Animation comparison">
+  <section class="lab" aria-label="Animation comparison" aria-busy="true" inert>
     <div class="mode-row" role="tablist" aria-label="Comparison source">
       <button role="tab" id="mode-webp" data-mode="webp" aria-selected="true"><span>01</span> WebP / PUP</button>
       <button role="tab" id="mode-rive" data-mode="rive" aria-selected="false"><span>02</span> Rive / PUP</button>
@@ -37,7 +37,7 @@
     <div class="stages" id="stages" data-background="warm">
       <article class="stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
       <article class="stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div></article>
-      <div id="loading" role="status" hidden>Loading the comparison…</div>
+      <div id="loading" role="status">Loading the comparison…</div>
     </div>
     <div class="timeline">
       <div class="timeline-heading"><span><i class="status-dot"></i><b id="phase">Ready</b><small id="frame-label">FRAME 01</small></span><output id="time">0.000 / 1.083 s</output></div>
