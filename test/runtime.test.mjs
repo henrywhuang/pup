@@ -78,6 +78,33 @@ test('byte views honor offsets and invalid headers fail', () => {
   assert.throws(() => parsePup(bytes.subarray(0, 30)));
 });
 
+test('fox nose-to-mouth connector stays centered throughout the jaw opening', () => {
+  const puppet = parsePup(fs.readFileSync(source('fox/animation.pup')));
+  const { art, rig } = puppet;
+  const nose = art.shapes.findIndex(shape => shape.fill === 0xffe63321);
+  const connector = art.shapes.findIndex(shape =>
+    shape.fill === 0xff943f0e && art.geoms[shape.geom].points?.length === 8);
+  assert(nose >= 0 && connector >= 0, 'Nose and connector must be present');
+  const nosePoints = art.geoms[art.shapes[nose].geom].points;
+  const noseXs = Array.from(nosePoints).filter((_, i) => i % 2 === 0);
+  const noseCenter = (Math.min(...noseXs) + Math.max(...noseXs)) / 2;
+  const points = art.geoms[art.shapes[connector].geom].points;
+  for (let time = 0.334; time <= 1.083; time += 1 / 240) {
+    poseAt(puppet, time, 'correct');
+    const n = rig.matrix.subarray(nose * 6, nose * 6 + 6);
+    const c = rig.matrix.subarray(connector * 6, connector * 6 + 6);
+    const determinant = n[0] * n[3] - n[1] * n[2];
+    for (const [a, b] of [[0, 2], [4, 6]]) {
+      const x = (points[a] + points[b]) / 2;
+      const y = (points[a + 1] + points[b + 1]) / 2;
+      const dx = c[0] * x + c[2] * y + c[4] - n[4];
+      const dy = c[1] * x + c[3] * y + c[5] - n[5];
+      const localX = (n[3] * dx - n[2] * dy) / determinant;
+      assert(Math.abs(localX - noseCenter) < 0.001, 'Connector drifted from the nose axis at ' + time);
+    }
+  }
+});
+
 test('independent followers survive later hierarchy updates and packing', async () => {
   const { mkdtempSync, writeFileSync, rmSync } = fs;
   const { tmpdir } = await import('node:os');

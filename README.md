@@ -106,7 +106,7 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 
 | Example | PUP file | Contents |
 | --- | ---: | --- |
-| Fox feedback | 12,596 B | `correct` + `wrong` |
+| Fox feedback | 12,669 B | `correct` + `wrong` |
 | Raccoon feedback | 14,563 B | `correct` + `wrong` |
 | Fox peek | 12,681 B | body/hand layers + peek playlist |
 | Raccoon peek | 7,693 B | body/hand layers + peek playlist |
