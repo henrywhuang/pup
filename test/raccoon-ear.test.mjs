@@ -38,39 +38,41 @@ function intersections(points, y) {
   return xs;
 }
 
-test('raccoon ear root overlaps the head throughout its independent squash and turn', () => {
-  const base = new URL('../examples/raccoon/', import.meta.url);
-  const svg = fs.readFileSync(new URL('rig.svg', base), 'utf8');
-  const ids = [...svg.matchAll(/<path\b[^>]*>/g)].map(match => match[0].match(/\sid="([^"]+)"/)[1]);
-  const puppet = parsePup(fs.readFileSync(new URL('animation.pup', base)));
-  const { art, rig } = puppet;
-  assert.equal(ids.length, art.shapes.length);
-  const head = ids.indexOf('raccoon-head'), ear = ids.indexOf('ear-right-fur');
-  assert(head >= 0 && ear >= 0);
-  const headPoints = outline(art.geoms[art.shapes[head].geom]);
-  const earPoints = outline(art.geoms[art.shapes[ear].geom]);
-  const rows = [];
-  for (let y = -80; y <= -20; y += 0.25) {
-    const xs = intersections(headPoints, y);
-    if (xs.length) rows.push([y, Math.max(...xs)]);
-  }
-  for (const clip of art.clock.clips) {
-    for (let time = 0; time <= clip.duration; time += 1 / 120) {
-      poseAt(puppet, time, clip.name);
-      const h = rig.matrix.subarray(head * 6, head * 6 + 6);
-      const e = rig.matrix.subarray(ear * 6, ear * 6 + 6);
-      const determinant = h[0] * h[3] - h[1] * h[2];
-      const points = earPoints.map(([x, y]) => {
-        const dx = e[0] * x + e[2] * y + e[4] - h[4];
-        const dy = e[1] * x + e[3] * y + e[5] - h[5];
-        return [(h[3] * dx - h[2] * dy) / determinant, (-h[1] * dx + h[0] * dy) / determinant];
-      });
-      for (const [y, headRight] of rows) {
-        const xs = intersections(points, y);
-        if (xs.length) {
-          assert(headRight - Math.min(...xs) > 2, 'Ear root lost its overlap at ' + clip.name + ' ' + time);
+for (const [side, sign] of [['right', 1], ['left', -1]]) {
+  test('raccoon ' + side + ' ear root stays attached throughout squash and turn', () => {
+    const base = new URL('../examples/raccoon/', import.meta.url);
+    const svg = fs.readFileSync(new URL('rig.svg', base), 'utf8');
+    const ids = [...svg.matchAll(/<path\b[^>]*>/g)].map(match => match[0].match(/\sid="([^"]+)"/)[1]);
+    const puppet = parsePup(fs.readFileSync(new URL('animation.pup', base)));
+    const { art, rig } = puppet;
+    assert.equal(ids.length, art.shapes.length);
+    const head = ids.indexOf('raccoon-head'), ear = ids.indexOf('ear-' + side + '-fur');
+    assert(head >= 0 && ear >= 0);
+    const headPoints = outline(art.geoms[art.shapes[head].geom]).map(([x, y]) => [sign * x, y]);
+    const earPoints = outline(art.geoms[art.shapes[ear].geom]);
+    const rows = [];
+    for (let y = -80; y <= -20; y += 0.25) {
+      const xs = intersections(headPoints, y);
+      if (xs.length) rows.push([y, Math.max(...xs)]);
+    }
+    for (const clip of art.clock.clips) {
+      for (let time = 0; time <= clip.duration; time += 1 / 120) {
+        poseAt(puppet, time, clip.name);
+        const h = rig.matrix.subarray(head * 6, head * 6 + 6);
+        const e = rig.matrix.subarray(ear * 6, ear * 6 + 6);
+        const determinant = h[0] * h[3] - h[1] * h[2];
+        const points = earPoints.map(([x, y]) => {
+          const dx = e[0] * x + e[2] * y + e[4] - h[4];
+          const dy = e[1] * x + e[3] * y + e[5] - h[5];
+          return [sign * (h[3] * dx - h[2] * dy) / determinant, (-h[1] * dx + h[0] * dy) / determinant];
+        });
+        for (const [y, headRight] of rows) {
+          const xs = intersections(points, y);
+          if (xs.length) {
+            assert(headRight - Math.min(...xs) > 2, 'Ear root lost its overlap at ' + clip.name + ' ' + time);
+          }
         }
       }
     }
-  }
-});
+  });
+}
