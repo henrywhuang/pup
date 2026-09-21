@@ -108,8 +108,8 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 | --- | ---: | --- |
 | Fox feedback | 12,669 B | `correct` + `wrong` |
 | Raccoon feedback | 14,563 B | `correct` + `wrong` |
-| Fox peek | 12,681 B | body/hand layers + peek playlist |
-| Raccoon peek | 7,693 B | body/hand layers + peek playlist |
+| Fox peek | 10,656 B | body/hand layers + peek playlist |
+| Raccoon peek | 6,339 B | body/hand layers + peek playlist |
 
 These are example measurements, not a promise about arbitrary animations.
 The original two fox WebPs total 266,476 B. The reconstruction deliberately
