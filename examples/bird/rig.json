@@ -1,0 +1,46 @@
+{
+  "durationMs": 1866.6666666666667,
+  "playbackRate": 1.5,
+  "bones": {
+    "root": {
+      "parent": null,
+      "runtimeNode": 2,
+      "label": "ROOT"
+    },
+    "torso": {
+      "parent": "root",
+      "runtimeNode": 4,
+      "label": "BODY"
+    },
+    "head": {
+      "parent": "torso",
+      "runtimeNode": 37,
+      "label": "HEAD"
+    },
+    "cape": {
+      "parent": "torso",
+      "runtimeNode": 6,
+      "label": "CAPE"
+    },
+    "wingFar": {
+      "parent": "torso",
+      "runtimeNode": 26,
+      "label": "WING L"
+    },
+    "wingNear": {
+      "parent": "torso",
+      "runtimeNode": 56,
+      "label": "WING R"
+    },
+    "footFar": {
+      "parent": "root",
+      "runtimeNode": 16,
+      "label": "FOOT L"
+    },
+    "footNear": {
+      "parent": "root",
+      "runtimeNode": 20,
+      "label": "FOOT R"
+    }
+  }
+}

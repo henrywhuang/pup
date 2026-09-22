@@ -20,14 +20,17 @@
 
   <section class="lab" aria-label="Animation comparison" aria-busy="true" inert>
     <div class="mode-row" role="tablist" aria-label="Comparison source">
-      <button role="tab" id="mode-webp" data-mode="webp" aria-selected="true"><span>01</span> WebP / PUP</button>
-      <button role="tab" id="mode-rive" data-mode="rive" aria-selected="false"><span>02</span> Rive / PUP</button>
-      <button role="tab" id="mode-skin" data-mode="skin" aria-selected="false"><span>03</span> SVG / PUP</button>
+      <button role="tab" id="case-fox-dance" data-mode="fox-dance" aria-selected="true"><span>01</span> Fox dance</button>
+      <button role="tab" id="case-raccoon-dance" data-mode="raccoon-dance" aria-selected="false"><span>02</span> Raccoon dance</button>
+      <button role="tab" id="case-bird-turn" data-mode="bird-turn" aria-selected="false"><span>03</span> Bird turn</button>
+      <button role="tab" id="mode-webp" data-mode="webp" aria-selected="false"><span>04</span> WebP / PUP</button>
+      <button role="tab" id="mode-rive" data-mode="rive" aria-selected="false"><span>05</span> Rive / PUP</button>
+      <button role="tab" id="mode-skin" data-mode="skin" aria-selected="false"><span>06</span> SVG / PUP</button>
     </div>
     <div class="toolbar">
       <div class="selects">
-        <label>Character <select id="character"><option value="fox">Fox</option><option value="raccoon">Raccoon</option></select></label>
-        <div class="segmented" aria-label="Action"><button data-action="correct" aria-pressed="true">Correct</button><button data-action="wrong" aria-pressed="false">Wrong</button></div>
+        <label>Character <select id="character"><option value="fox">Fox</option><option value="raccoon">Raccoon</option><option value="bird">Bird</option></select></label>
+        <div id="actions" class="segmented" aria-label="Action"><button data-action="correct" aria-pressed="true">Correct</button><button data-action="wrong" aria-pressed="false">Wrong</button></div>
       </div>
       <div class="view-tools">
         <div class="segmented" aria-label="Comparison view"><button data-view="side" aria-pressed="true">Side by side</button><button data-view="overlay" aria-pressed="false">Overlay</button><button data-view="diff" aria-pressed="false">Difference</button></div>
@@ -35,16 +38,16 @@
       </div>
     </div>
     <div class="stages" id="stages" data-background="warm">
-      <article class="stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
-      <article class="stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot stage-download"><div class="asset-meta"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div><a id="download" class="download download-primary" href="#" download>↓ Download PUP</a></div></article>
+      <article class="stage" id="source-stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
+      <article class="stage" id="pup-stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot stage-download"><div class="asset-meta"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div><a id="download" class="download download-primary" href="#" download>↓ Download PUP</a></div></article>
       <div id="loading" role="status">Loading the comparison…</div>
     </div>
     <div class="timeline">
       <div class="timeline-heading"><span><i class="status-dot"></i><b id="phase">Ready</b><small id="frame-label">FRAME 01</small></span><output id="time">0.000 / 1.083 s</output></div>
       <input type="range" id="seek" min="0" max="1083" value="0" step="1" aria-label="Animation time">
       <div class="transport">
-        <div class="playback"><button class="primary" id="play" aria-label="Play animation">▶ <span>Play</span></button><button class="icon" id="restart" aria-label="Restart animation">↻</button><button class="icon" id="previous" aria-label="Previous reference frame">‹</button><button class="icon" id="next" aria-label="Next reference frame">›</button><select id="speed" aria-label="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option></select></div>
-        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label></div>
+        <div class="playback"><button class="primary" id="play" aria-label="Play animation">▶ <span>Play</span></button><button class="icon" id="restart" aria-label="Restart animation">↻</button><button class="icon" id="reverse" aria-label="Play in reverse" title="Play in reverse">⇤</button><button class="icon" id="previous" aria-label="Previous reference frame">‹</button><button class="icon" id="next" aria-label="Next reference frame">›</button><select id="speed" aria-label="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option></select></div>
+        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label><input type="checkbox" id="bones"> Bones</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label></div>
       </div>
     </div>
     <p id="comparison-note" class="comparison-note">The PUP file contains both actions. The source file shown above contains the selected action only.</p>
@@ -58,7 +61,7 @@
   </section>
 
   <section id="downloads" class="downloads" aria-labelledby="downloads-title">
-    <div class="section-title"><div><span class="eyebrow">TAKE THE PUPPETS WITH YOU</span><h2 id="downloads-title">Download the animations.</h2><p>Choose one PUP, or get all four in a ZIP.<br>Each reaction file includes both Correct and Wrong.</p></div><a class="download download-primary bundle-download" href="DOWNLOAD_BUNDLE_URL" download="pup-examples.zip">↓ Download all <span>ZIP · DOWNLOAD_BUNDLE_SIZE</span></a></div>
+    <div class="section-title"><div><span class="eyebrow">TAKE THE PUPPETS WITH YOU</span><h2 id="downloads-title">Download the animations.</h2><p>Choose an animation, or get all seven examples in a ZIP.<br>Dance examples come first; each reaction file includes Correct and Wrong.</p></div><a class="download download-primary bundle-download" href="DOWNLOAD_BUNDLE_URL" download="pup-examples.zip">↓ Download all <span>ZIP · DOWNLOAD_BUNDLE_SIZE</span></a></div>
     <div class="download-grid">DOWNLOAD_CARDS</div>
     <p class="download-note">Play these files with the <a href="https://github.com/henrywhuang/pup#player">PUP player</a>. Demo artwork: <a href="ASSETS.md">asset terms</a>.</p>
   </section>

@@ -26,7 +26,10 @@ const puppet = await loadPup('fox.pup', { signal: abortController.signal });
 renderCanvas(puppet, canvas, 0.375, { clip: 'correct', wireframe: false });
 ```
 
-`parsePup(bytes)` accepts ArrayBuffer, typed-array byte views or base64.
+`parsePup(bytes)` synchronously accepts PUP1/PUP2/PUPZ as ArrayBuffer,
+typed-array byte views or base64. `parsePuc(bytes)` is asynchronous and reads
+PUC1 using the browser's native gzip decompressor. `loadPup(url)` detects these
+formats, or extracts the data in the supplied self-contained HTML preview.
 `durationOf(puppet, clip)` returns seconds; null measures the default playlist.
 `poseAt(puppet, seconds, clip)` evaluates a pose.
 `drawCanvas(puppet, context, { layer: 0 })` paints a solved pose in artboard
@@ -37,6 +40,29 @@ coordinates under the host's transform. Draw layers 0/1 around a host card.
 `createSvgRenderer(puppet)` returns `{ svg, render, dispose }`. Append the SVG
 to a sized container and call `render(seconds, { clip, wireframe, layer })`.
 Clip IDs are unique per instance.
+
+## Explicit skeleton overlays
+
+```js
+import { loadPup, renderCanvas, createSvgRenderer } from '@henrywhuang/pup';
+const bird = await loadPup('source.html'); // extract data; do not execute HTML
+renderCanvas(bird, canvas, 0.6, { clip: 'turn', bones: true });
+const renderer = createSvgRenderer(bird);
+container.append(renderer.svg);
+renderer.render(0.6, { clip: 'turn', bones: true });
+```
+
+For a standalone `turn.puc`, load `rig.json` and pass its `bones` object instead
+of `true`. Each joint is `{ runtimeNode, parent, label? }`. Node origins come
+from the solved world matrices, so lines and labels move with the animation.
+`CanvasPlayer.load(canvas, 'source.html', { clip: 'turn', bones: true })` works
+with the optional built-in clock too. Set `player.bones = null` to hide them.
+`skeletonPoints(puppet, bones)` exposes the solved coordinates to other hosts.
+
+`parsePreview(html)` supports the supplied static `encodedPuppet` and JSON
+`map` embedding contract, not arbitrary HTML/JavaScript animation programs.
+No HTML scripts are evaluated. PUC1 requires `DecompressionStream('gzip')`;
+there is an explicit unsupported-browser error and no downloaded polyfill.
 
 `createRig`, `startClip`, `advance`, `seek` and `solve` expose the evaluator.
 After solving, read shape matrices, colors and animated points from the rig.

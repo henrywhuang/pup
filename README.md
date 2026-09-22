@@ -12,6 +12,10 @@ Canvas or native SVG, with no WASM and no runtime package dependencies.
 
 ## Real comparisons
 
+- **01 Fox dance / 02 Raccoon dance:** the approved dance files, with PUP
+  displayed first beside the original WebP. Both downloads are preserved byte for byte.
+- **03 Little bird:** the supplied HTML turnaround preview in the shared
+  player, including its eight moving joints in Canvas and SVG.
 - **WebP / PUP:** the original fox reference and its vector reconstruction,
   with synchronized scrubbing, frame stepping, overlay and pixel difference.
 - **Rive / PUP:** original fox/raccoon body and hand Rive artboards beside the
@@ -23,7 +27,9 @@ animation assets are reported separately. PUP is a focused character player;
 Rive provides a much broader editor and runtime system.
 
 The demo has a **Download PUP** button below the current animation. Its
-Downloads section offers all four example puppets individually or in one ZIP.
+Downloads section offers all seven example animations individually or in one ZIP.
+The bird uses `.puc` plus a downloadable bone map; the ZIP includes that map
+and the raccoon's unwrapped PUP1 compatibility file.
 Each reaction file contains both the correct and wrong actions.
 
 ## Run
@@ -43,7 +49,7 @@ Open `http://127.0.0.1:4320`. Rive's JS/WASM loads only for the Rive comparison.
 ```sh
 npm test
 npm run build       # static demo in dist/
-npm run examples    # reproducibly rebuild the feedback PUP files
+npm run examples    # reproduce feedback/dance files and extract the bird preview
 ```
 
 ## WebP + SVG → PUP
@@ -61,8 +67,8 @@ node bin/pup.mjs import work/rig.svg work/motion.json work/animation.pup
 Preparation extracts frame timing, a lossless scrubber sheet and SVG part IDs.
 It does not automatically infer a finished rig or expression shapes. Use the
 [reconstruction prompt](prompts/rebuild-pup.md) for the agent-assisted workflow.
-The included example rigs and motion files compile to the exact distributed
-PUP bytes.
+The included feedback and dance rigs compile to the exact distributed PUP bytes.
+The bird preserves the animation embedded in its original HTML preview.
 
 > **Author's workflow note:** Only **Astra + max reasoning** worked reliably
 > for this reconstruction workflow in my experience; other models wasted time.
@@ -106,6 +112,9 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 
 | Example | PUP file | Contents |
 | --- | ---: | --- |
+| Fox dance | 87,035 B | `dance` · PUP2 cubic pose banks |
+| Raccoon dance | 21,021 B | `dance` · lossless PUPZ (31,068 B plain PUP1) |
+| Little bird | 68,136 B | `turn` · PUC1, with a separate eight-joint map |
 | Fox feedback | 12,669 B | `correct` + `wrong` |
 | Raccoon feedback | 14,563 B | `correct` + `wrong` |
 | Fox peek | 10,656 B | body/hand layers + peek playlist |
@@ -121,7 +130,25 @@ path following and weighted control-point deformation. It does not provide
 Rive's visual editor, state-machine authoring or full renderer feature set.
 See [the authoring contract](docs/format.md).
 
-`PUP1` is experimental. Keep the compiler and runtime from the same release.
+PUP1, PUP2 and the compact containers remain experimental. Keep the compiler
+and runtime from the same release. See [format support](docs/format.md).
+
+## Player changes for these examples
+
+See the [change and dependency report](docs/dance-release.md) for measured
+bundle sizes and verification details.
+
+The player reads PUP2 pose banks, the lossless PUPZ wrapper and the supplied
+PUC1 container. Canvas and SVG cache pose paths on first use. `loadPup()` can
+also extract the bird animation and bone map directly from its HTML, without
+executing the embedded scripts. Bones use explicit node mappings; pose-only
+files do not acquire a made-up skeleton.
+
+There are **no new npm dependencies**. PUC1 uses the browser's built-in
+`DecompressionStream('gzip')`. PUP1/PUP2/PUPZ do not need this API. Rive remains
+an existing demo-only development dependency and loads only in the Rive tab.
+The shared, minified browser bundle is measured in the live demo; reference
+frame sheets are comparison assets and are not part of the player or PUP files.
 
 ## License
 

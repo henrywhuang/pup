@@ -4,6 +4,8 @@ import {decodePup} from '../src/format.js';
 import {encodePup} from './compiler.mjs';
 export function optimizePup(input) {
  const before=Buffer.from(input),art=decodePup(before.toString('base64'));
+ // PUP2 already packs pose references; a compressed wrapper must stay compressed.
+ if (before.subarray(0,4).toString() !== 'PUP1') return before;
  // A constant reset in a sparse clip is necessary when another clip changes
  // that channel, even when the reset value equals the authored rest pose.
  const changedSlots=new Set();

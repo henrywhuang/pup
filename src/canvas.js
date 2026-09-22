@@ -1,4 +1,7 @@
 import { decodePup } from './format.js';
+import {parsePuc} from './puc.js';
+import {parsePreview} from './preview.js';
+import {drawSkeleton} from './skeleton.js';
 import { createRig, restart, seek, solve, startClip } from './rig.js';
 
 const rgba = value => 'rgba(' + (value >>> 16 & 255) + ',' + (value >>> 8 & 255) +
@@ -22,7 +25,10 @@ export function parsePup(input) {
 export async function loadPup(url, { signal } = {}) {
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error('PUP request failed: HTTP ' + response.status);
-  return parsePup(await response.arrayBuffer());
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes[0] === 60) return parsePreview(new TextDecoder().decode(bytes));
+  return bytes[0] === 80 && bytes[1] === 85 && bytes[2] === 67 && bytes[3] === 49
+    ? parsePuc(bytes) : parsePup(bytes);
 }
 
 export function durationOf(puppet, clip = null) {
@@ -75,11 +81,17 @@ function pathFor(geometry, points) {
 }
 
 /** Draw a solved pose in artboard coordinates; the host owns the transform. */
-export function drawCanvas(puppet, ctx, { layer = null, wireframe = false } = {}) {
+export function drawCanvas(puppet, ctx, { layer = null, wireframe = false, bones = null } = {}) {
   const { art, rig } = puppet;
-  puppet.staticPaths ??= art.geoms.map(g => g.verts ? null : pathFor(g, null));
+  puppet.staticPaths ??= art.geoms.map(g => g.verts || g.poses ? null : pathFor(g, null));
   if (puppet.pathRevision !== puppet.revision) {
-    puppet.paths = art.geoms.map((g, i) => puppet.staticPaths[i] ?? pathFor(g, rig.points[i]));
+    puppet.posePaths ??= art.geoms.map(g => g.poses ? new Map() : null);
+    puppet.paths = art.geoms.map((g, i) => {
+      if (!g.poses) return puppet.staticPaths[i] ?? pathFor(g, rig.points[i]);
+      const index = rig.poseIndices[i], cache = puppet.posePaths[i];
+      if (!cache.has(index)) cache.set(index, pathFor(g.poses[index], null));
+      return cache.get(index);
+    });
     puppet.pathRevision = puppet.revision;
   }
   const paths = puppet.paths;
@@ -111,6 +123,7 @@ export function drawCanvas(puppet, ctx, { layer = null, wireframe = false } = {}
     }
     ctx.restore();
   });
+  if (bones) drawSkeleton(puppet, ctx, bones);
 }
 
 export function renderCanvas(puppet, canvas, seconds, { clip = null, ...options } = {}) {

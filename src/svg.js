@@ -1,4 +1,5 @@
 import { poseAt } from './canvas.js';
+import {syncSvgSkeleton} from './skeleton.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 let nextId = 0;
@@ -61,12 +62,22 @@ export function createSvgRenderer(puppet, { label = 'PUP animation' } = {}) {
     parent.append(path);
     return path;
   });
+  const skeleton = element('g');
+  skeleton.setAttribute('aria-label', 'Skeleton');
+  skeleton.setAttribute('pointer-events', 'none');
+  svg.append(skeleton);
+  const posePaths = art.geoms.map(g => g.poses ? new Map() : null);
   return {
     svg,
-    render(seconds, { clip = null, wireframe = false, layer = null } = {}) {
+    render(seconds, { clip = null, wireframe = false, layer = null, bones = null } = {}) {
       poseAt(puppet, seconds, clip);
       const { rig } = puppet;
-      const ds = art.geoms.map((g, i) => pathData(g, rig.points[i]));
+      const ds = art.geoms.map((g, i) => {
+        if (!g.poses) return pathData(g, rig.points[i]);
+        const index = rig.poseIndices[i], cache = posePaths[i];
+        if (!cache.has(index)) cache.set(index, pathData(g.poses[index], null));
+        return cache.get(index);
+      });
       art.clips.forEach((clip, i) => {
         const shape = art.shapes[clip.source];
         clips[i].setAttribute('d', ds[shape.geom]);
@@ -83,6 +94,7 @@ export function createSvgRenderer(puppet, { label = 'PUP animation' } = {}) {
         path.setAttribute('stroke', wireframe ? '#316b7caa' : rig.strokeColor[i] ? color(rig.strokeColor[i]) : 'none');
         if (wireframe || shape.stroke) path.setAttribute('stroke-width', wireframe ? 0.6 : shape.stroke[1]);
       });
+      syncSvgSkeleton(skeleton, puppet, bones);
     },
     dispose() { svg.remove(); },
   };

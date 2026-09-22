@@ -8,15 +8,18 @@ const manifest = await fetch(__MANIFEST__).then(response => {
   if (!response.ok) throw new Error('Comparison manifest failed to load');
   return response.json();
 });
-const W = 608, H = 378;
+const W = 608; let H = 608;
 const reference = $('#reference'), result = $('#result');
 const pupCanvas = document.createElement('canvas');
 const state = {
-  mode: 'webp', character: 'fox', action: 'correct', view: 'side',
+  mode: new URLSearchParams(location.search).get('example') || 'fox-dance', character: 'fox', action: 'dance', view: 'side',
   renderer: 'canvas', playing: false, loop: true, wire: false,
-  speed: 1, time: 0, duration: 1.083, last: null, loading: false,
+  speed: 1, direction: 1, bones: false, time: 0, duration: 1.083, last: null, loading: false,
 };
 let current = null, loadVersion = 0;
+const frameCanvas = document.createElement('canvas'); let frameSource = null, copiedFrame = -1;
+const selectedCase = () => manifest.cases.find(example => example.id === state.mode);
+if (!selectedCase() && !['webp','rive','skin'].includes(state.mode)) state.mode = 'fox-dance';
 const imageCache = new Map();
 function loadImage(url) {
   if (!imageCache.has(url)) imageCache.set(url, new Promise((resolve, reject) => {
@@ -37,6 +40,15 @@ $('#runtime-note').textContent = 'Gzip estimates: the bundled PUP player versus 
   manifest.runtime.rive.version + ' JS + primary WASM. Feature scopes differ. This is not a speed benchmark.';
 
 function controls() {
+  const example = selectedCase();
+  H = example ? 608 : 378;
+  $('#stages').style.setProperty('--stage-ratio', example ? '1' : '608/378');
+  const primary = $(example ? '#pup-stage' : '#source-stage');
+  if ($('#stages').firstElementChild !== primary) $('#stages').insertBefore(primary, $('#stages').firstElementChild);
+  $('#actions').hidden = !!example;
+  $('#bones').disabled = !example?.bones;
+  $('#bones').checked = !!example?.bones && state.bones;
+  $('#bones').parentElement.title = example?.bones ? 'Show the supplied joint hierarchy' : 'This example has no semantic skeleton metadata';
   $$('#play span').forEach(node => { node.textContent = state.playing ? 'Pause' : 'Play'; });
   $('#play').firstChild.textContent = state.playing ? 'Ⅱ ' : '▶ ';
   $('#play').setAttribute('aria-label', state.playing ? 'Pause animation' : 'Play animation');
@@ -128,14 +140,23 @@ function render() {
     }
   } else {
     const left = logicalContext(reference);
-    if (state.mode === 'webp') {
+    if (current.timing) {
       const timing = current.timing;
-      left.drawImage(current.image,
-        (index % timing.columns) * timing.width, Math.floor(index / timing.columns) * timing.height,
-        timing.width, timing.height, 0, 0, W, H);
+      if (frameSource !== current.image || copiedFrame !== index) {
+        if (frameCanvas.width !== timing.width || frameCanvas.height !== timing.height) {
+          frameCanvas.width = timing.width; frameCanvas.height = timing.height;
+        }
+        const ctx = frameCanvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0,0,timing.width,timing.height);
+        ctx.drawImage(current.image,(index%timing.columns)*timing.width,Math.floor(index/timing.columns)*timing.height,
+          timing.width,timing.height,0,0,timing.width,timing.height);
+        frameSource = current.image; copiedFrame = index;
+      }
+      left.drawImage(frameCanvas, 0, 0, W, H);
     } else left.drawImage(current.image, 0, 0, W, H);
-    renderCanvas(pup, pupCanvas, state.time, { clip: state.action, wireframe: state.wire });
-    if (state.renderer === 'svg') current.svg.render(state.time, { clip: state.action, wireframe: state.wire });
+    const options = {clip:state.action,wireframe:state.wire,bones:state.bones?current.bones:null};
+    renderCanvas(pup, pupCanvas, state.time, options);
+    if (state.renderer === 'svg') current.svg.render(state.time, options);
   }
   const ctx = clear(result);
   if (state.view === 'overlay') {
@@ -162,24 +183,46 @@ function render() {
   $('#seek').value = Math.round(state.time * 1000);
   $('#time').textContent = state.time.toFixed(3) + ' / ' + state.duration.toFixed(3) + ' s';
   $('#frame-label').textContent = current.timing ? 'FRAME ' + String(index + 1).padStart(2, '0') + ' / ' + current.timing.frameCount : 'CONTINUOUS VECTOR MOTION';
-  $('#phase').textContent = state.mode === 'rive' ? 'Card peek' : state.action === 'wrong' ? 'Squint · shake · reset' : 'Anticipate · smile · celebrate';
-  $('#pup-title').textContent = ({ side: 'Vector reconstruction', overlay: 'Source × PUP', diff: 'Rendered pixel difference' })[state.view];
+  $('#phase').textContent = current.phase || (state.mode === 'rive' ? 'Card peek' : state.action === 'wrong' ? 'Squint · shake · reset' : 'Anticipate · smile · celebrate');
+  $('#pup-title').textContent = ({ side: current.title || 'Vector reconstruction', overlay: 'Source × PUP', diff: 'Rendered pixel difference' })[state.view];
   $('#pup-format').textContent = state.view === 'side' ? 'PUP / ' + state.renderer.toUpperCase() : state.view === 'overlay' ? '50% / 50%' : 'PIXEL DIFFERENCE';
 }
 
 async function select() {
   const version = ++loadVersion;
-  state.loading = true; state.time = 0; state.last = null;
+  state.loading = true; state.time = 0; state.last = null; state.direction = 1;
+  const example = selectedCase();
+  if (example) { state.character = example.character; state.action = example.clip; }
+  else if (!['correct','wrong'].includes(state.action)) state.action = 'correct';
   $('#loading').hidden = false; $('#error').hidden = true;
   $('#download').removeAttribute('href');
   $('#download').setAttribute('aria-disabled', 'true');
   if (state.mode === 'webp') state.character = 'fox';
   if (state.mode === 'skin') state.character = 'raccoon';
-  if (state.mode === 'rive') state.renderer = 'canvas';
+  if (state.mode === 'rive') {
+    state.renderer = 'canvas';
+    if (!manifest.peek[state.character]) state.character = 'fox';
+  }
+  if (!example) $('#fidelity-note').textContent = 'Some shapes were intentionally cleaned up: round eyes, smooth smiles and continuous expressions. Pixel differences also include rasterization.';
   controls();
   let next;
   try {
-    if (state.mode === 'rive') {
+    if (example) {
+      const [pup,image] = await Promise.all([loadPup(example.pup.url),loadImage(example.reference.sheet)]);
+      if (version !== loadVersion) return;
+      next = {pup,image,timing:example.reference,svg:createSvgRenderer(pup),bones:example.bones,title:example.title,phase:example.phase};
+      state.duration = example.duration;
+      $('#source-title').textContent = example.reference.kind === 'html' ? 'Original HTML rendering' : 'Original animation';
+      $('#source-format').textContent = example.reference.kind === 'html' ? 'HTML / CANVAS CAPTURE' : 'WEBP';
+      $('#source-size').textContent = size(example.reference.original.bytes);
+      $('#source-caption').textContent = example.reference.kind === 'html' ? 'HTML bundle · player + base64 animation' : 'Original WebP file';
+      $('#pup-size').textContent = size(example.pup.bytes);
+      $('#pup-caption').textContent = 'One ' + example.clip + ' action · ' + example.duration.toFixed(3) + ' s';
+      $('#download').href = example.pup.url;
+      $('#comparison-note').textContent = example.note;
+      $('#geometry').textContent = pup.art.shapes.length + ' shapes · ' + (example.bones ? Object.keys(example.bones).length + ' joints' : 'vector motion');
+      $('#fidelity-note').textContent = example.reference.kind === 'html' ? 'The same animation data in the original HTML and the shared player. The reference is a captured rendering, not a separate reconstruction.' : 'The approved animation file is preserved. Differences include artwork choices, vector reconstruction and rasterization.';
+    } else if (state.mode === 'rive') {
       const spec = manifest.peek[state.character];
       const [pup, rive] = await Promise.all([loadPup(spec.pup.url), RiveReference.create(spec, manifest.runtime.rive)]);
       next = { pup, rive };
@@ -215,8 +258,13 @@ async function select() {
     if (version !== loadVersion) { next.rive?.dispose(); next.svg?.dispose(); return; }
     current?.rive?.dispose(); current?.svg?.dispose();
     current = next;
+    frameSource = null; copiedFrame = -1;
     $('#svg-output').replaceChildren(...(next.svg ? [next.svg.svg] : []));
-    $('#download').download = state.character + '-' + (state.mode === 'rive' ? 'peek' : 'reactions') + '.pup';
+    $('#download').download = example ? example.id + (example.id === 'bird-turn' ? '.puc' : '.pup') : state.character + '-' + (state.mode === 'rive' ? 'peek' : 'reactions') + '.pup';
+    $('#download').textContent = example?.id === 'bird-turn' ? '↓ Download PUC' : '↓ Download PUP';
+    const url = new URL(location.href); url.searchParams.set('example',state.mode); history.replaceState(null,'',url);
+    // Large reference sheets are only retained for the active comparison.
+    for (const [key,promise] of imageCache) if (key !== (example?.reference.sheet || (state.mode === 'webp' ? manifest.quiz.fox.actions[state.action].reference.sheet : state.mode === 'skin' ? manifest.quiz.raccoon.artwork.url : null))) imageCache.delete(key);
     $('#download').setAttribute('aria-label', 'Download ' + $('#download').download);
     $('#download').removeAttribute('aria-disabled');
     state.loading = false; $('#loading').hidden = true;
@@ -241,14 +289,17 @@ $$('[data-view]').forEach(button => button.addEventListener('click', () => {
   state.view = button.dataset.view; controls(); render();
 }));
 $('#renderer').addEventListener('change', event => { state.renderer = event.target.value; controls(); render(); });
+$('#bones').addEventListener('change', event => { state.bones = event.target.checked; render(); });
 $('#wire').addEventListener('change', event => { state.wire = event.target.checked; render(); });
 $('#loop').addEventListener('change', event => { state.loop = event.target.checked; });
 $('#speed').addEventListener('change', event => { state.speed = Number(event.target.value); state.last = null; });
 $('#play').addEventListener('click', () => {
-  if (state.time >= state.duration) state.time = 0;
+  if (state.direction === 1 && state.time >= state.duration) state.time = 0;
+  if (state.direction === -1 && state.time <= 0) state.time = state.duration;
   setPlaying(!state.playing);
 });
-$('#restart').addEventListener('click', () => { state.time = 0; setPlaying(true); render(); });
+$('#restart').addEventListener('click', () => { state.direction = 1; state.time = 0; setPlaying(true); render(); });
+$('#reverse').addEventListener('click', () => { state.time = state.duration; state.direction = -1; setPlaying(true); render(); });
 $('#seek').addEventListener('input', event => { setPlaying(false); state.time = Number(event.target.value) / 1000; render(); });
 function step(direction) {
   setPlaying(false);
@@ -275,10 +326,10 @@ document.addEventListener('visibilitychange', () => { state.last = null; });
 window.addEventListener('pagehide', () => { current?.rive?.dispose(); });
 function tick(now) {
   if (state.playing && !state.loading) {
-    if (state.last != null) state.time += Math.min(0.1, (now - state.last) / 1000) * state.speed;
-    if (state.time >= state.duration) {
-      if (state.loop) state.time %= state.duration;
-      else { state.time = state.duration; setPlaying(false); }
+    if (state.last != null) state.time += Math.min(0.1, (now - state.last) / 1000) * state.speed * state.direction;
+    if ((state.direction === 1 && state.time >= state.duration) || (state.direction === -1 && state.time <= 0)) {
+      if (state.loop) state.time = state.direction === 1 ? state.time % state.duration : state.duration;
+      else { state.time = state.direction === 1 ? state.duration : 0; setPlaying(false); }
     }
     state.last = now; render();
   }

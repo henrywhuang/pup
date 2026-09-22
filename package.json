@@ -20,7 +20,10 @@
     "tools/optimize.mjs",
     "tools/prepare.py",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "tools/compact.mjs",
+    "tools/pup-optimize.mjs",
+    "tools/pup-turn.mjs"
   ],
   "scripts": {
     "build": "node tools/build.mjs",

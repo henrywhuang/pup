@@ -5,11 +5,12 @@ export class CanvasPlayer {
   static async load(canvas, url, options = {}) {
     return new CanvasPlayer(canvas, await loadPup(url, options), options);
   }
-  constructor(canvas, puppet, { clip = null, onEnd = null } = {}) {
+  constructor(canvas, puppet, { clip = null, onEnd = null, bones = null } = {}) {
     this.canvas = canvas;
     this.puppet = puppet;
     this.clip = clip;
     this.onEnd = onEnd;
+    this.bones = bones;
     this.time = 0;
     this.speed = 1;
     this.loop = false;
@@ -40,7 +41,7 @@ export class CanvasPlayer {
     this.canvas.height = Math.max(1, Math.round(height * dpr));
     this.draw();
   }
-  draw() { renderCanvas(this.puppet, this.canvas, this.time, { clip: this.clip }); }
+  draw() { renderCanvas(this.puppet, this.canvas, this.time, { clip: this.clip, bones: this.bones }); }
   play(clip = this.clip, { loop = false, speed = 1 } = {}) {
     durationOf(this.puppet, clip); // validate before changing playback
     if (!(speed > 0 && Number.isFinite(speed))) throw new Error('Playback speed must be positive');

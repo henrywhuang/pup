@@ -7,8 +7,8 @@
  * under src/assets/critter/ are the animations; Metro embeds them straight
  * into the bundle (tools/pup-transformer.js).
  *
- *   pup import <art.svg> <motion.json> <out.pup>
- *   pup dump <file.pup>
+ *   node bin/pup.mjs import <art.svg> <motion.json> <out.pup>
+ *   node bin/pup.mjs dump <file.pup>
  *
  * `import` builds a puppet from an SVG plus a motion file — the way a new
  * character comes in from a design tool; `dump` prints one back as text.
@@ -46,7 +46,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {fileURLToPath} from 'node:url';
+import {unpackPup} from '../src/compact.js';
+import { expandTurns } from './pup-turn.mjs';
+import { optimizeKeys, flattenTranslations, reuseParentNode, shareTwinTracks } from './pup-optimize.mjs';
 
 const LAYERS = ['behind', 'front'];
 const RAD = Math.PI / 180;
@@ -186,11 +189,9 @@ function parseEase(name, s) {
 // ---- per-critter compile ---------------------------------------------------
 
 function compile(svgPath, motionPath) {
-  if (svgPath instanceof URL) svgPath = fileURLToPath(svgPath);
-  if (motionPath instanceof URL) motionPath = fileURLToPath(motionPath);
-  const name = path.basename(svgPath);
+  const name = path.basename(svgPath instanceof URL ? fileURLToPath(svgPath) : svgPath);
   const svg = parseXml(fs.readFileSync(svgPath, 'utf8'));
-  const motion = JSON.parse(fs.readFileSync(motionPath, 'utf8'));
+  let motion = JSON.parse(fs.readFileSync(motionPath, 'utf8'));
   const root = svg.children.find(el => el.tag === 'svg') ?? fail(name, 'no <svg>');
   const [, , w, h] = (root.attrs.viewBox ?? '').split(/[\s,]+/).map(Number);
   if (!(w > 0 && h > 0)) fail(name, 'viewBox must be "0 0 w h"');
@@ -203,6 +204,12 @@ function compile(svgPath, motionPath) {
     }
     el.children.forEach(index);
   })(root);
+  motion = expandTurns(motion, id => {
+    const el = byId.get(id) ?? fail(name, `turn targets unknown node #${id}`);
+    return { ...parseTransform(name, id, el.attrs.transform), opacity: Number(el.attrs.opacity ?? 1) };
+  });
+  optimizeKeys(motion);
+  flattenTranslations(root, motion, el => parseTransform(name, el.attrs.id, el.attrs.transform));
   const clipDefs = new Map(); // clipPath id -> { source id, evenOdd }
   for (const defs of root.children.filter(el => el.tag === 'defs'))
     for (const cp of defs.children) {
@@ -223,6 +230,7 @@ function compile(svgPath, motionPath) {
   const shapeOf = new Map(); // element id -> shape index
   const geomVerts = []; // per geom: vertex count (0 = static)
   const pending = []; // follow/bend/clip references, resolved after the walk
+  const poseControllers = new Map();
   // Followers measure their target's outline and clips are cut from their
   // source's outline every frame, so both are compiled as vertices even
   // when nothing animates them.
@@ -246,16 +254,36 @@ function compile(svgPath, motionPath) {
     for (const child of el.children) {
       const id = child.attrs.id;
       const stack = child.attrs['clip-path'] ? [...clipStack, child.attrs['clip-path']] : clipStack;
+      const attached = child.attrs['data-parent'];
+      const transformParent = attached
+        ? (nodeOf.get(attached) ?? fail(name, `data-parent #${attached} must be declared before #${id}`))
+        : parent;
       if (child.tag === 'g') {
-        walk(child, addNode(child, parent), layer, stack);
+        walk(child, addNode(child, transformParent), layer, stack);
       } else if (child.tag === 'path') {
-        const node = addNode(child, parent);
+        const reuse = reuseParentNode(child, motion, el => parseTransform(name, el.attrs.id, el.attrs.transform));
+        const node = reuse ? transformParent : addNode(child, transformParent);
+        if (reuse && id) nodeOf.set(id, node);
         const a = child.attrs;
         const shapeId = id ?? elIdOfSplit(el);
         const dynamic =
           a['data-bend'] !== undefined || outlined.has(shapeId) || motionTouchesVertices(motion, shapeId);
         const geom = geoms.length;
-        if (dynamic) {
+        const bank = motion.poseBanks?.[shapeId];
+        if (bank) {
+          if (a['data-bend'] || a['data-follow']) fail(name, `#${id}: a pose bank cannot also bend/follow`);
+          if (!bank.controller || !Array.isArray(bank.frames) || !bank.frames.length) fail(name, `#${id}: invalid pose bank`);
+          const quantum = bank.quantum ?? .0625;
+          if (!(quantum > 0)) fail(name, `#${id}: invalid pose quantum`);
+          if (bank.cubic !== undefined && typeof bank.cubic !== 'boolean') fail(name, `#${id}: cubic pose flag must be boolean`);
+          const stride = bank.cubic ? 6 : 2;
+          for (const frame of bank.frames) for (const contour of frame) {
+            if (contour.length < (bank.cubic ? 12 : 6) || contour.length % stride) fail(name, `#${id}: invalid closed pose contour`);
+            for (const value of contour) if (!Number.isFinite(value) || Math.abs(Math.round(value / quantum)) > 32767) fail(name, `#${id}: pose coordinate out of range`);
+          }
+          geoms.push({ poses: bank.frames, cubic: !!bank.cubic, compact: !!bank.compact, quantum, controller: bank.controller, slot: -1 });
+          geomVerts.push(0);
+        } else if (dynamic) {
           const v = parseVertices(name, id ?? el.attrs.id, a.d);
           geoms.push({ verts: v.verts, closed: v.closed, slot: -1 });
           geomVerts.push(v.verts.length / 6);
@@ -291,6 +319,17 @@ function compile(svgPath, motionPath) {
   const layerEls = LAYERS.map(l => byId.get(l) ?? fail(name, `no <g id="${l}">`));
   layerEls.forEach((el, layer) => walk(el, addNode(el, 0), layer, []));
 
+  if (motion.optimize) {
+    const unique = [], counts = [], remap = [], seen = new Map();
+    geoms.forEach((g, i) => {
+      const key = g.verts || g.poses ? null : JSON.stringify([g.verbs, g.points]);
+      if (key !== null && seen.has(key)) remap[i] = seen.get(key);
+      else { remap[i] = unique.length; if (key !== null) seen.set(key, unique.length); unique.push(g); counts.push(geomVerts[i]); }
+    });
+    geoms.splice(0, geoms.length, ...unique); geomVerts.splice(0, geomVerts.length, ...counts);
+    for (const shape of shapes) shape.geom = remap[shape.geom];
+  }
+
   // Slots: nodes first (6 each), then animated vertices (6 each), then follows.
   let slot = nodeParent.length * 6;
   geoms.forEach((g, i) => {
@@ -298,12 +337,19 @@ function compile(svgPath, motionPath) {
       g.slot = slot;
       slot += geomVerts[i] * 6;
     }
+    if (g.poses) {
+      const existing = poseControllers.get(g.controller);
+      if (existing && existing.count !== g.poses.length) fail(name, `pose controller ${g.controller} has inconsistent frame counts`);
+      if (!existing) poseControllers.set(g.controller, { slot: slot++, count: g.poses.length });
+      g.slot = poseControllers.get(g.controller).slot;
+    }
   });
   for (const p of pending) {
     const shape = shapes[p.shape];
     if (p.follow) {
       const target = shapeOf.get(p.follow);
       if (target === undefined) fail(name, `data-follow target #${p.follow} is not a shape`);
+      if (geoms[shapes[target].geom].poses) fail(name, 'followers cannot target a pose bank');
       shape.follow = { target, slot: slot++, at: p.at };
     } else {
       const pivots = p.bend.split(/\s+/).map(id => nodeOf.get(id) ?? fail(name, `data-bend pivot #${id} unknown`));
@@ -334,6 +380,11 @@ function compile(svgPath, motionPath) {
 
   // Motion → slots.
   const slotFor = (id, prop) => {
+    if (prop === 'pose') {
+      const controller = poseControllers.get(id);
+      if (!controller) fail(name, `unknown pose controller ${id}`);
+      return [controller.slot, 1];
+    }
     const node = nodeOf.get(id);
     const shape = shapeOf.get(id);
     const nodeProps = { tx: 0, ty: 1, rotate: 2, sx: 3, sy: 4, opacity: 5 };
@@ -374,10 +425,11 @@ function compile(svgPath, motionPath) {
           let last = -1;
           for (const key of keys) {
             const [frame, v, ease] = key;
+            if (prop === 'pose' && (!Number.isInteger(v) || v < 0 || v >= poseControllers.get(id).count)) fail(name, `#${id}: pose index out of range`);
             if (!(frame > last)) fail(name, `#${id}.${prop}: keyframes must be in frame order`);
             last = frame;
             const t = frame / clip.fps;
-            const e = JSON.stringify(parseEase(name, ease));
+            const e = JSON.stringify(parseEase(name, prop === 'pose' ? 'hold' : ease));
             if (!easeIndex.has(e)) {
               easeIndex.set(e, eases.length);
               eases.push(JSON.parse(e));
@@ -387,7 +439,7 @@ function compile(svgPath, motionPath) {
           tracks.push(track);
         }
       if (!(clip.fps > 0 && clip.frames > 0)) fail(name, `clip "${clipName}" needs fps and frames`);
-      return { name: clipName, duration: clip.frames / clip.fps, tracks, eases };
+      return { name: clipName, duration: clip.frames / clip.fps, tracks: motion.optimize ? shareTwinTracks(tracks) : tracks, eases };
     }),
     play: motion.play.map(step => {
       const clip = clipNames.indexOf(step.clip);
@@ -397,7 +449,8 @@ function compile(svgPath, motionPath) {
   };
   if (!clock.play.length) fail(name, 'play is empty');
 
-  return { w, h, slots: slot, nodeParent, nodeRest, shapes, geoms, clips, clock };
+  return { w, h, slots: slot, nodeParent, nodeRest, shapes, geoms, clips, clock,
+    manifest: { nodes: Object.fromEntries(nodeOf), shapes: Object.fromEntries(shapeOf) } };
 }
 
 function motionTouchesVertices(motion, id) {
@@ -431,6 +484,8 @@ function writer() {
       view.setUint16(at, v, true);
       at += 2;
     },
+    i16: v => { need(2); view.setInt16(at, v, true); at += 2; },
+    delta: v => { let n = ((v << 1) ^ (v >> 31)) >>> 0; do { need(1); view.setUint8(at++, (n & 127) | (n > 127 ? 128 : 0)); n >>>= 7; } while (n); },
     u32: v => {
       need(4);
       view.setUint32(at, v >>> 0, true);
@@ -447,7 +502,9 @@ function writer() {
 
 function encodePup(a) {
   const w = writer();
-  for (const c of 'PUP1') w.u8(c.charCodeAt(0));
+  const cubicPool = new Map();
+  const index = value => { do { w.u8((value & 127) | (value > 127 ? 128 : 0)); value >>>= 7; } while(value); };
+  for (const c of a.geoms.some(g => g.poses) ? 'PUP2' : 'PUP1') w.u8(c.charCodeAt(0));
   w.u16(a.w);
   w.u16(a.h);
   w.u16(a.slots);
@@ -489,7 +546,36 @@ function encodePup(a) {
     }
   }
   for (const geom of a.geoms) {
-    if (geom.verts) {
+    if (geom.poses) {
+      w.u8(2); w.u16(geom.slot); w.u16(geom.poses.length); w.f32(geom.quantum); w.u8(geom.cubic ? (geom.compact ? 3 : 2) : 1);
+      const poseReferences=new Map();
+      for (let poseIndex=0;poseIndex<geom.poses.length;poseIndex++) {
+        const pose=geom.poses[poseIndex];
+        if(geom.cubic&&geom.compact){
+          if(!pose.length){index(0);continue;}
+          const key=pose.map(c=>c.map(v=>Math.round(v/geom.quantum)).join(',')).join(';');
+          if(poseReferences.has(key)){index((poseReferences.get(key)+1)*2);continue;}
+          poseReferences.set(key,poseIndex);index(pose.length*2+1);
+        }else w.u16(pose.length);
+        for (const contour of pose) {
+          w.u16(contour.length / (geom.cubic ? 6 : 2)); let x = 0, y = 0;
+          if (geom.cubic && geom.compact) {
+            const q = contour.map(v => Math.round(v / geom.quantum)), n = q.length / 6;
+            w.delta(q[0]); w.delta(q[1]);
+            for (let i = 0; i < n; i++) {
+              const a=i*6,b=((i+1)%n)*6;
+              const c=[q[b]-q[a],q[b+1]-q[a+1],q[a+4]-q[a],q[a+5]-q[a+1],q[b+2]-q[b],q[b+3]-q[b+1]];
+              const key=c.join(','), reverse=[-c[0],-c[1],c[4],c[5],c[2],c[3]].join(',');
+              if(cubicPool.has(key)) index((cubicPool.get(key)+1)*2);
+              else if(cubicPool.has(reverse)) index((cubicPool.get(reverse)+1)*2+1);
+              else { if(cubicPool.size>=1048575)throw new Error('Cubic dictionary too large');index(0);c.forEach(v=>w.delta(v));cubicPool.set(key,cubicPool.size); }
+            }
+          } else {
+            for (let k = 0; k < contour.length; k += 2) { const xx = Math.round(contour[k] / geom.quantum), yy = Math.round(contour[k + 1] / geom.quantum); w.delta(xx - x); w.delta(yy - y); x = xx; y = yy; }
+          }
+        }
+      }
+    } else if (geom.verts) {
       w.u8(1);
       w.u8(geom.closed ? 1 : 0);
       w.u16(geom.slot);
@@ -540,15 +626,19 @@ function encodePup(a) {
 // ---- dump ------------------------------------------------------------------
 
 function decodePup(bytes) {
+  bytes = unpackPup(bytes);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let at = 0;
   const u8 = () => view.getUint8(at++);
   const u16 = () => (at += 2, view.getUint16(at - 2, true));
+  const i16 = () => (at += 2, view.getInt16(at - 2, true));
+  const delta = () => { let value = 0; for (let i = 0; i < 3; i++) { const b = u8(); value |= (b & 127) << (i * 7); if (!(b & 128)) return (value >>> 1) ^ -(value & 1); } throw new Error('bad contour delta'); };
   const u32 = () => (at += 4, view.getUint32(at - 4, true));
   const f32 = () => (at += 4, Number(view.getFloat32(at - 4, true).toPrecision(7)));
   const f32s = n => Array.from({ length: n }, f32);
-  if (String.fromCharCode(u8(), u8(), u8(), u8()) !== 'PUP1') throw new Error('not a .pup');
-  const out = { w: u16(), h: u16(), slots: u16() };
+  const magic = String.fromCharCode(u8(), u8(), u8(), u8());
+  if (magic !== 'PUP1' && magic !== 'PUP2') throw new Error('not a .pup');
+  const out = { format: magic, w: u16(), h: u16(), slots: u16() };
   const [nodes, shapes, geoms, clips, motionClips, play] = [u16(), u16(), u16(), u16(), u8(), u8()];
   out.nodes = Array.from({ length: nodes }, (_, i) => ({ i, parent: (p => (p === 0xffff ? -1 : p))(u16()), rest: f32s(6) }));
   out.shapes = Array.from({ length: shapes }, (_, i) => {
@@ -564,11 +654,38 @@ function decodePup(bytes) {
     }
     return shape;
   });
-  out.geoms = Array.from({ length: geoms }, (_, i) =>
-    u8() === 1
-      ? { i, closed: !!u8(), slot: u16(), verts: f32s(u16() * 6) }
-      : { i, verbs: Array.from({ length: u16() }, u8).map(v => 'MLCZ'[v]).join(''), points: f32s(u16() * 2) },
-  );
+  const cubicPool=[];
+  const index=()=>{let v=0;for(let i=0;i<3;i++){const b=u8();v|=(b&127)<<(i*7);if(!(b&128))return v;}throw new Error('bad cubic reference');};
+  out.geoms = Array.from({ length: geoms }, (_, i) => {
+    const kind = u8();
+    if (kind === 2) {
+      const start = at - 1, slot = u16(), count = u16(), quantum = f32(), encoding = u8();
+      const poses=[];
+      for(let p=0;p<count;p++){
+        const token=encoding===3?index():-1;
+        if(token===0){poses.push([]);continue;}
+        if(token>0&&!(token&1)){const prior=(token>>>1)-1;if(prior>=p)throw new Error('bad pose reference');poses.push(poses[prior]);continue;}
+        const pose=Array.from({length:encoding===3?token>>>1:u16()},()=>{
+        const n = u16(), points = []; let x = 0, y = 0;
+        if(encoding===3){
+          x=delta();y=delta();const sx=x,sy=y;
+          for(let k=0;k<n;k++){
+            const token=index();let c;
+            if(!token){c=Array.from({length:6},delta);cubicPool.push(c);}
+            else {c=cubicPool[(token>>>1)-1];if(!c)throw new Error('bad cubic reference');if(token&1)c=[-c[0],-c[1],c[4],c[5],c[2],c[3]];}
+            const a=k*6,b=((k+1)%n)*6,nx=x+c[0],ny=y+c[1];
+            points[a]=x*quantum;points[a+1]=y*quantum;points[a+4]=(x+c[2])*quantum;points[a+5]=(y+c[3])*quantum;
+            points[b+2]=(nx+c[4])*quantum;points[b+3]=(ny+c[5])*quantum;x=nx;y=ny;
+          }
+          if(x!==sx||y!==sy)throw new Error('unclosed cubic contour');
+        }else for (let k = 0; k < n * (encoding === 2 ? 3 : 1); k++) { if (encoding) { x += delta(); y += delta(); } else { x = i16(); y = i16(); } points.push(x * quantum, y * quantum); }
+        return points;
+        });poses.push(pose);
+      }
+      return { i, slot, quantum, poses, cubic: encoding >= 2, encodedBytes: at - start };
+    }
+    return kind === 1 ? { i, closed: !!u8(), slot: u16(), verts: f32s(u16() * 6) } : { i, verbs: Array.from({ length: u16() }, u8).map(v => 'MLCZ'[v]).join(''), points: f32s(u16() * 2) };
+  });
   out.clips = Array.from({ length: clips }, () => ({ source: u16(), evenOdd: !!u8() }));
   out.motion = Array.from({ length: motionClips }, () => {
     const name = String.fromCharCode(...Array.from({ length: u8() }, u8));
@@ -584,5 +701,6 @@ function decodePup(bytes) {
   if (at !== bytes.length) throw new Error(`${bytes.length - at} bytes left over`);
   return out;
 }
+
 
 export { compile, encodePup, decodePup };

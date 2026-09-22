@@ -93,19 +93,20 @@ function applyClip(rig, clip, t) {
         const track = tracks[k];
         const last = track.length - 3;
         let value;
-        if (t <= track[3])
+        const sampleTime = t + (rig.poseSlots[track[0]] ? 1e-6 : 0);
+        if (sampleTime <= track[3])
             value = track[4];
-        else if (t >= track[last])
+        else if (sampleTime >= track[last])
             value = track[last + 1];
         else {
             let i = 3;
-            while (track[i + 3] <= t)
+            while (track[i + 3] <= sampleTime)
                 i += 3;
             const t0 = track[i];
             const v0 = track[i + 1];
             const t1 = track[i + 3];
             const v1 = track[i + 4];
-            value = v0 + (v1 - v0) * ease(eases[track[i + 2]], (t - t0) / (t1 - t0));
+            value = v0 + (v1 - v0) * ease(eases[track[i + 2]], Math.max(0, Math.min(1, (sampleTime - t0) / (t1 - t0))));
         }
         props[track[0]] = value;
         if (track[1] >= 0)
@@ -122,6 +123,9 @@ export function restart(rig) {
         if (g.verts)
             for (let i = 0; i < g.verts.length; i++)
                 props[g.slot + i] = g.verts[i];
+        else if (g.poses)
+            props[g.slot] = 0;
+    rig.poseIndices.fill(0xffff);
     for (const s of art.shapes)
         if (s.follow)
             props[s.follow.slot] = s.follow.at;
@@ -157,6 +161,9 @@ export function createRig(art) {
         fillColor: new Uint32Array(art.shapes.length),
         strokeColor: new Uint32Array(art.shapes.length),
         points: art.geoms.map(g => (g.verts ? new Float32Array(g.verts) : null)),
+        poseIndices: new Uint16Array(art.geoms.length).fill(0xffff),
+        poseDirty: new Uint8Array(art.geoms.length),
+        poseSlots: new Uint8Array(art.slots),
         followerShapes: art.shapes
             .map((shape, index) => (shape.follow ? index : -1))
             .filter(index => index >= 0)
@@ -167,6 +174,7 @@ export function createRig(art) {
         time: 0,
         done: false,
     };
+    for (const geom of art.geoms) if (geom.poses) rig.poseSlots[geom.slot] = 1;
     restart(rig);
     return rig;
 }
@@ -338,6 +346,11 @@ export function solve(rig) {
         const geom = art.geoms[g];
         if (geom.verts)
             geomPoints(props, geom.slot, points[g]);
+        else if (geom.poses) {
+            const index = Math.max(0, Math.min(geom.poses.length - 1, Math.floor(props[geom.slot] + 1e-5)));
+            rig.poseDirty[g] = rig.poseIndices[g] !== index ? 1 : 0;
+            rig.poseIndices[g] = index;
+        }
     }
     // Followers: the node's position and heading become a point on the
     // target's outline (targets are always compiled as vertices), then
