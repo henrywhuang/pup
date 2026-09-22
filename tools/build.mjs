@@ -22,6 +22,12 @@ function copy(source, target) {
   fs.writeFileSync(path.join(dist, target), bytes);
   return { ...stats(bytes), url: target + '?v=' + hash(bytes) };
 }
+function inspection(source, target, asset, defaultMode = null) {
+  const data = JSON.parse(fs.readFileSync(source));
+  if (data.asset.sha256 !== asset.sha256) throw new Error('Stale bindings: run npm run examples (' + source + ')');
+  return {...copy(source,target), assetSha256:asset.sha256, summary:data.summary,
+    filename:data.asset.filename.replace(/\.(pup|puc)$/,'.bindings.json'), defaultMode};
+}
 
 await build({ entryPoints: ['src/index.js'], outfile: path.join(dist, 'pup.js'), bundle: true,
   format: 'esm', platform: 'browser', target: 'es2020', minify: true, legalComments: 'inline' });
@@ -48,6 +54,7 @@ for (const character of ['fox', 'raccoon']) {
   const artwork = copy(source + 'artwork.svg', 'assets/' + character + '/artwork.svg');
   const model = parsePup(fs.readFileSync(source + 'animation.pup'));
   manifest.quiz[character] = { pup, artwork, width: model.art.w, height: model.art.h,
+    inspection:inspection(source+'bindings.json','assets/'+character+'/bindings.json',pup),
     shapes: model.art.shapes.length,
     animatedVertices: model.art.geoms.reduce((n, g) => n + (g.verts ? g.verts.length / 6 : 0), 0),
     actions: Object.fromEntries(model.art.clock.clips.map(clip => [clip.name, { duration: clip.duration }])) };
@@ -55,6 +62,7 @@ for (const character of ['fox', 'raccoon']) {
   const peekModel = parsePup(fs.readFileSync('examples/peek/' + character + '.pup'));
   manifest.peek[character] = {
     pup: peek, duration: durationOf(peekModel), width: peekModel.art.w, height: peekModel.art.h,
+    inspection:inspection('examples/peek/'+character+'.bindings.json','assets/peek/'+character+'.bindings.json',peek,'transforms'),
     body: copy('examples/peek/' + character + '-body.riv', 'assets/peek/' + character + '-body.riv'),
     hand: copy('examples/peek/' + character + '-hand.riv', 'assets/peek/' + character + '-hand.riv'),
   };
@@ -74,7 +82,7 @@ for (const action of ['correct', 'wrong']) {
 }
 const dances = [
   {character:'fox',label:'Fox',phase:'Step · turn · clap',
-    note:'The supplied 85,387-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
+    note:'The supplied 85,183-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
   {character:'raccoon',label:'Raccoon',phase:'Step · sway · return',
     note:'The supplied compact release is preserved. Colors come from the SVG; the WebP supplies the motion reference. The tail follows the body with a delayed tip.'},
   {character:'bird',label:'Bird',phase:'Bird dance',
@@ -95,6 +103,7 @@ for (const {character, label, phase, note} of dances) {
     sheet:'frames/' + character + '-dance/frames.webp?v=' + hash(fs.readFileSync(path.join(output, 'frames.webp')))};
   manifest.cases.push({id:character+'-dance', character, title:label+' dance', clip:'dance', duration,
     width:model.art.w,height:model.art.h,pup,reference,shapes:model.art.shapes.length,
+    inspection:inspection(source+'bindings.json',target+'bindings.json',pup),
     bones:null, phase, note,
     compatibility:character==='raccoon'?copy(source+'animation.compat.pup',target+'animation.compat.pup'):null});
 }
@@ -103,9 +112,11 @@ const birdViews = JSON.parse(fs.readFileSync('examples/bird/views/index.json')).
   ...view, ...copy('examples/bird/views/' + view.file, 'assets/bird/views/' + view.file),
 }));
 const birdSourceBytes = birdViews.reduce((sum, view) => sum + view.bytes, 0);
+const birdPuc = copy('examples/bird/turn.puc','assets/bird/turn.puc');
 manifest.cases.push({id:'bird-turn',character:'bird',title:'Little bird turn',clip:'turn',
   duration:birdMapping.durationMs/1000,width:460,height:460,shapes:0,
-  pup:copy('examples/bird/turn.puc','assets/bird/turn.puc'),bones:birdMapping.bones,
+  pup:birdPuc,bones:birdMapping.bones,
+  inspection:inspection('examples/bird/bindings.json','assets/bird/bindings.json',birdPuc),
   rig:copy('examples/bird/rig.json','assets/bird/rig.json'),
   preview:copy('examples/bird/source.html','assets/bird/source.html'),
   reference:{kind:'svg-views',views:birdViews,original:{bytes:birdSourceBytes},
@@ -115,7 +126,7 @@ manifest.cases.push({id:'bird-turn',character:'bird',title:'Little bird turn',cl
 const downloads = manifest.cases.map(example => ({...example.pup,
   name:example.id+(example.id==='bird-turn'?'.puc':'.pup'),character:example.id==='bird-turn'?'Little bird':({fox:'Fox',raccoon:'Raccoon',bird:'Bird'})[example.character],
   title:example.clip==='dance'?'Dance':'Turnaround',detail:example.clip==='dance'?'One complete dance action':'Front to back and return · 8 joints',
-  compatibility:example.compatibility,rig:example.rig}));
+  compatibility:example.compatibility,rig:example.rig,inspection:example.inspection}));
 
 for (const group of ['quiz', 'peek']) for (const character of ['fox', 'raccoon']) {
   downloads.push({
@@ -124,6 +135,7 @@ for (const group of ['quiz', 'peek']) for (const character of ['fox', 'raccoon']
     character: character === 'fox' ? 'Fox' : 'Raccoon',
     title: group === 'quiz' ? 'Reactions' : 'Card peek',
     detail: group === 'quiz' ? 'Correct + wrong · two actions' : 'Peek + return · two layers',
+    inspection:manifest[group][character].inspection,
   });
 }
 const bundlePath = 'downloads/pup-examples.zip';
@@ -132,6 +144,7 @@ const bundleResult = spawnSync(process.env.PUP_PYTHON || 'python3', ['tools/buil
     output: path.join(dist, bundlePath),
     files: [
       ...downloads.map(asset => ({ name: asset.name, path: path.join(dist, asset.url.split('?')[0]) })),
+      ...downloads.map(asset => ({ name: asset.inspection.filename, path:path.join(dist,asset.inspection.url.split('?')[0]) })),
       { name: 'raccoon-dance.compat.pup', path: path.join(root, 'examples/dance/raccoon/animation.compat.pup') },
       { name: 'bird-turn.rig.json', path: path.join(root, 'examples/bird/rig.json') },
       { name: 'bird-README.md', path: path.join(root, 'examples/bird/README.md') },
@@ -163,6 +176,7 @@ const cards = downloads.map(asset =>
   '</code></div><div class="download-actions"><a class="download" href="' + asset.url + '" download="' + asset.name +
   '" aria-label="Download ' + asset.name + '">↓ ' + (asset.name.endsWith('.puc') ? '.puc' : '.pup') + '<span>' + size(asset.bytes) + '</span></a>' +
   (asset.rig ? '<a class="download extra-download" href="' + asset.rig.url + '" download="bird-turn.rig.json">↓ Bone map</a>' : '') +
+  '<a class="download extra-download" href="'+asset.inspection.url+'" download="'+asset.inspection.filename+'">↓ Rig data</a>' +
   (asset.compatibility ? '<a class="download extra-download" href="' + asset.compatibility.url + '" download="raccoon-dance.compat.pup">↓ PUP1 compatible</a>' : '') + '</div></article>',
 ).join('\n');
 const html = fs.readFileSync('demo/index.html', 'utf8')

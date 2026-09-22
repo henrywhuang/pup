@@ -40,7 +40,7 @@
     </div>
     <div class="stages" id="stages" data-background="warm">
       <article class="stage" id="source-stage"><div class="stage-heading"><span id="source-title">Original animation</span><small id="source-format">WEBP</small></div><canvas id="reference" width="608" height="378" aria-label="Original animation reference"></canvas><div class="stage-foot"><strong id="source-size">…</strong><span id="source-caption">Original encoded file</span></div></article>
-      <article class="stage" id="pup-stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div></div><div class="stage-foot stage-download"><div class="asset-meta"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div><a id="download" class="download download-primary" href="#" download>↓ Download PUP</a></div></article>
+      <article class="stage" id="pup-stage"><div class="stage-heading"><span id="pup-title">Vector reconstruction</span><small id="pup-format">PUP / CANVAS</small></div><div class="pup-wrap"><canvas id="result" width="608" height="378" aria-label="PUP animation"></canvas><div id="svg-output" hidden></div><svg id="rig-overlay" class="rig-overlay" aria-label="Rig inspection overlay" hidden></svg></div><div class="stage-foot stage-download"><div class="asset-meta"><strong id="pup-size">…</strong><span id="pup-caption">One puppet, two actions</span></div><a id="download" class="download download-primary" href="#" download>↓ Download PUP</a></div></article>
       <div id="loading" role="status">Loading the comparison…</div>
     </div>
     <div id="source-views" class="source-views" aria-label="Original SVG views" hidden></div>
@@ -49,9 +49,18 @@
       <input type="range" id="seek" min="0" max="1083" value="0" step="1" aria-label="Animation time">
       <div class="transport">
         <div class="playback"><button class="primary" id="play" aria-label="Play animation">▶ <span>Play</span></button><button class="icon" id="restart" aria-label="Restart animation">↻</button><button class="icon" id="reverse" aria-label="Play in reverse" title="Play in reverse">⇤</button><button class="icon" id="previous" aria-label="Previous reference frame">‹</button><button class="icon" id="next" aria-label="Next reference frame">›</button><select id="speed" aria-label="Playback speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option></select></div>
-        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label><input type="checkbox" id="bones"> Bones</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label></div>
+        <div class="render-tools"><label><input type="checkbox" id="loop" checked> Loop</label><label><input type="checkbox" id="wire"> PUP outlines</label><label title="Inspect the actual skeleton, transform pivots and deformation bindings"><input type="checkbox" id="bones"> Rig / bindings</label><label>PUP <select id="renderer"><option value="canvas">Canvas</option><option value="svg">SVG</option></select></label></div>
       </div>
     </div>
+    <section id="rig-inspector" class="rig-inspector" aria-label="Rig inspector" hidden>
+      <div id="rig-inspector-tools" class="inspector-tools">
+        <label>View <select id="rig-mode" aria-label="Rig inspection mode"></select></label>
+        <label id="rig-part-label">Part <select id="rig-part" aria-label="Inspected part"></select></label>
+        <label id="rig-control-label">Control <select id="rig-control" aria-label="Inspected control"></select></label>
+        <a id="rig-download" class="download" download>↓ Binding data · JSON</a>
+      </div>
+      <p id="rig-status" role="status"></p>
+    </section>
     <p id="comparison-note" class="comparison-note">The PUP file contains both actions. The source file shown above contains the selected action only.</p>
     <div id="error" role="alert" hidden></div>
   </section>

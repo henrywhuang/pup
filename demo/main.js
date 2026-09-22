@@ -1,5 +1,6 @@
 import { loadPup, durationOf, poseAt, drawCanvas, renderCanvas, createSvgRenderer } from '../src/index.js';
 import { RiveReference } from './rive-reference.js';
+import { RigInspector } from './rig-inspector.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -17,6 +18,7 @@ const state = {
   speed: 1, direction: 1, bones: false, time: 0, duration: 1.083, last: null, loading: false,
 };
 let current = null, loadVersion = 0;
+const inspector = new RigInspector(() => render());
 const frameCanvas = document.createElement('canvas'); let frameSource = null, copiedFrame = -1;
 const selectedCase = () => manifest.cases.find(example => example.id === state.mode);
 if (!selectedCase() && !['webp','rive','skin'].includes(state.mode)) state.mode = 'fox-dance';
@@ -44,9 +46,9 @@ function controls() {
   H = example ? 608 : 378;
   $('#stages').style.setProperty('--stage-ratio', example ? '1' : '608/378');
   $('#actions').hidden = !!example;
-  $('#bones').disabled = !example?.bones;
-  $('#bones').checked = !!example?.bones && state.bones;
-  $('#bones').parentElement.title = example?.bones ? 'Show the supplied joint hierarchy' : 'This example has no semantic skeleton metadata';
+  $('#bones').disabled = state.loading || !current?.inspection;
+  $('#bones').checked = state.bones;
+  inspector.toggle(state.bones && !state.loading);
   $$('#play span').forEach(node => { node.textContent = state.playing ? 'Pause' : 'Play'; });
   $('#play').firstChild.textContent = state.playing ? 'Ⅱ ' : '▶ ';
   $('#play').setAttribute('aria-label', state.playing ? 'Pause animation' : 'Play animation');
@@ -141,9 +143,11 @@ function render() {
   if (!current || state.loading) return;
   fitStage();
   const { pup } = current;
+  let placement;
   const index = frameAt(state.time);
   if (state.mode === 'rive') {
     const spec = manifest.peek[state.character], pose = peekPose(spec);
+    placement = pose;
     const layers = current.rive.render(state.time);
     const left = logicalContext(reference);
     left.drawImage(layers[0], pose.x, pose.y, spec.width * pose.k, spec.height * pose.k);
@@ -177,7 +181,9 @@ function render() {
       }
       left.drawImage(frameCanvas, 0, 0, W, H);
     } else left.drawImage(current.image, 0, 0, W, H);
-    const options = {clip:state.action,wireframe:state.wire,bones:state.bones?current.bones:null};
+    const k = Math.min(W/pup.art.w,H/pup.art.h);
+    placement = {k,x:(W-pup.art.w*k)/2,y:(H-pup.art.h*k)/2};
+    const options = {clip:state.action,wireframe:state.wire};
     renderCanvas(pup, pupCanvas, state.time, options);
     if (state.renderer === 'svg') current.svg.render(state.time, options);
   }
@@ -209,6 +215,7 @@ function render() {
   $('#phase').textContent = current.phase || (state.mode === 'rive' ? 'Card peek' : state.action === 'wrong' ? 'Squint · shake · reset' : 'Anticipate · smile · celebrate');
   $('#pup-title').textContent = ({ side: current.title || 'Vector reconstruction', overlay: 'Source × PUP', diff: 'Rendered pixel difference' })[state.view];
   $('#pup-format').textContent = state.view === 'side' ? 'PUP / ' + state.renderer.toUpperCase() : state.view === 'overlay' ? '50% / 50%' : 'PIXEL DIFFERENCE';
+  inspector.render({width:W,height:H,placement});
 }
 
 async function select() {
@@ -236,7 +243,7 @@ async function select() {
         Promise.all((views ? views.map(view => view.url) : [example.reference.sheet]).map(loadImage))]);
       if (version !== loadVersion) return;
       next = {pup,image:images[0],images,views,sourceView:0,framing:example.reference.framing,
-        timing:views ? null : example.reference,svg:createSvgRenderer(pup),bones:example.bones,title:example.title,phase:example.phase};
+        timing:views ? null : example.reference,svg:createSvgRenderer(pup),bones:example.bones,title:example.title,phase:example.phase,inspection:example.inspection};
       state.duration = example.duration;
       $('#source-title').textContent = views ? 'Original SVG views' : 'Original animation';
       $('#source-format').textContent = views ? '7 SVG VIEWS' : 'WEBP';
@@ -251,7 +258,7 @@ async function select() {
     } else if (state.mode === 'rive') {
       const spec = manifest.peek[state.character];
       const [pup, rive] = await Promise.all([loadPup(spec.pup.url), RiveReference.create(spec, manifest.runtime.rive)]);
-      next = { pup, rive };
+      next = { pup, rive, inspection:spec.inspection };
       if (version !== loadVersion) { rive.dispose(); return; }
       state.duration = spec.duration;
       $('#source-title').textContent = 'Original Rive artboards';
@@ -267,7 +274,7 @@ async function select() {
       const spec = manifest.quiz[state.character], action = spec.actions[state.action];
       const [pup, image] = await Promise.all([loadPup(spec.pup.url), loadImage(state.mode === 'webp' ? action.reference.sheet : spec.artwork.url)]);
       if (version !== loadVersion) return;
-      next = { pup, image, timing: state.mode === 'webp' ? action.reference : null, svg: createSvgRenderer(pup) };
+      next = { pup, image, timing: state.mode === 'webp' ? action.reference : null, svg: createSvgRenderer(pup), inspection:spec.inspection };
       state.duration = durationOf(pup, state.action);
       $('#source-title').textContent = state.mode === 'webp' ? 'Original animation' : 'Original SVG artwork';
       $('#source-format').textContent = state.mode === 'webp' ? 'WEBP' : 'SVG / FINAL POSE';
@@ -284,6 +291,7 @@ async function select() {
     if (version !== loadVersion) { next.rive?.dispose(); next.svg?.dispose(); return; }
     current?.rive?.dispose(); current?.svg?.dispose();
     current = next;
+    inspector.setTarget(next.pup, next.inspection);
     frameSource = null; copiedFrame = -1;
     sourceViews();
     $('#svg-output').replaceChildren(...(next.svg ? [next.svg.svg] : []));
@@ -318,7 +326,7 @@ $$('[data-view]').forEach(button => button.addEventListener('click', () => {
   state.view = button.dataset.view; controls(); render();
 }));
 $('#renderer').addEventListener('change', event => { state.renderer = event.target.value; controls(); render(); });
-$('#bones').addEventListener('change', event => { state.bones = event.target.checked; render(); });
+$('#bones').addEventListener('change', event => { state.bones = event.target.checked; inspector.toggle(state.bones); render(); });
 $('#wire').addEventListener('change', event => { state.wire = event.target.checked; render(); });
 $('#loop').addEventListener('change', event => { state.loop = event.target.checked; });
 $('#speed').addEventListener('change', event => { state.speed = Number(event.target.value); state.last = null; });

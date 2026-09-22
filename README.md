@@ -33,6 +33,12 @@ The bird uses `.puc` plus a downloadable bone map; the ZIP includes that map
 and the raccoon's unwrapped PUP1 compatibility file.
 Each reaction file contains both the correct and wrong actions.
 
+Enable **Rig / bindings** to inspect named skeletons, curve anchors/handles,
+signed deformation weights and stored transform pivots. Every example has a
+downloadable binding JSON, also included in the ZIP. Fox dance uses vector
+pose banks and is identified as such; no skeleton is invented for it.
+See [the rig inspector](docs/rig-inspection.md).
+
 ## Run
 
 Node.js 22+ and Python with Pillow:
@@ -68,8 +74,8 @@ node bin/pup.mjs import work/rig.svg work/motion.json work/animation.pup
 Preparation extracts frame timing, a lossless scrubber sheet and SVG part IDs.
 It does not automatically infer a finished rig or expression shapes. Use the
 [reconstruction prompt](prompts/rebuild-pup.md) for the agent-assisted workflow.
-The included feedback and fox/raccoon dance rigs compile to the exact distributed PUP bytes.
-Bird dance preserves the supplied PUP and WebP files without re-authoring them.
+The included feedback and dance rigs reproduce the distributed PUP bytes.
+Bird dance includes its original precision recipe; its PUP and WebP remain unchanged.
 The bird preserves the animation embedded in its original HTML preview.
 
 > **Author's workflow note:** Only **Astra + max reasoning** worked reliably
@@ -114,7 +120,7 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 
 | Example | PUP file | Contents |
 | --- | ---: | --- |
-| Fox dance | 85,387 B | `dance` · PUP2 cubic pose banks |
+| Fox dance | 85,183 B | `dance` · PUP2 cubic pose banks |
 | Raccoon dance | 22,222 B | `dance` · lossless PUPZ (35,100 B plain PUP1) |
 | Bird dance | 9,575 B | `dance` · lossless PUPZ · 4.033 seconds |
 | Little bird | 68,136 B | `turn` · PUC1, with a separate eight-joint map |

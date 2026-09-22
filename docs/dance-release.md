@@ -37,13 +37,13 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 
 | Example | Exact file bytes | Contents |
 | --- | ---: | --- |
-| Fox dance | 85,387 | Frozen PUP2 dance, 4.633 seconds |
+| Fox dance | 85,183 | Frozen PUP2 dance, 4.633 seconds |
 | Raccoon dance | 22,222 | PUPZ dance, 4.332 seconds; 35,100-byte PUP1 fallback |
 | Bird dance | 9,575 | Supplied PUPZ dance, 4.033 seconds; 97-frame WebP reference |
 | Little bird | 68,136 | Original embedded PUC1 turn; separate eight-joint map |
 
-The two dance files are preserved byte for byte and can be reproduced from
-the checked-in rigs. The bird file is extracted unchanged from `source.html`.
+The three dance files can be reproduced from the checked-in rigs (including
+Bird dance's original precision recipe). The turnaround bird is extracted unchanged from `source.html`.
 Downloads include the eight main examples, the bone map and the PUP1 fallback.
 
 The bird's seven source SVGs are extracted unchanged from `preview-v5.html`
@@ -53,8 +53,9 @@ Users can select any original view on the left and scrub the animation on the
 right. The original responsive stage dimensions are preserved.
 
 The latest fox revision retains four approved pose selections and repairs the
-mouth seam by joining the brown oral regions. It is 85,387 bytes; the other
-20 geometry banks and all motion tracks remain unchanged.
+mouth seam by joining the brown oral regions. Its subsequent sole and
+tail-root cleanup is also included. The current file is 85,183 bytes and
+all motion tracks are unchanged.
 
 The raccoon keeps the selected raised-hand motion and overlapping shoulder
 attachments. Its neck-transition repair separates the foreground palm from
@@ -66,7 +67,7 @@ prior release. No new keyframes, player code or dependencies are needed.
 
 ## Validation
 
-All 19 automated tests pass, covering released bytes, pose selection, packed
+All 23 automated tests pass, covering released bytes, pose selection, packed
 geometry, HTML extraction, skeleton coordinates and existing feedback/peek
 regressions, including shoulder attachment, smooth palm closure and the reported neck-transition interval.
 Rebuilding the examples produces identical bytes.
@@ -78,3 +79,8 @@ WASM files. The bird's Canvas render is pixel-identical to the original HTML
 at 0, 0.4, 0.9 and 1.4 seconds. Canvas/SVG comparisons cover 15 representative
 poses; the fox is identical at all six checked poses, with only sparse edge
 rasterization differences in the other examples.
+
+The optional rig inspector now exposes actual binding data for every example.
+Its code and JSON load separately from the default PUP player, whose bundle
+size remains unchanged. No runtime package or WASM dependency was added.
+See [rig inspection](rig-inspection.md) for the data and display conventions.

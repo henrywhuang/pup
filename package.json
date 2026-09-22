@@ -11,7 +11,8 @@
     ".": "./src/index.js",
     "./rig": "./src/rig.js",
     "./format": "./src/format.js",
-    "./compiler": "./tools/compiler.mjs"
+    "./compiler": "./tools/compiler.mjs",
+    "./inspection": "./src/inspection.js"
   },
   "files": [
     "src",
@@ -23,7 +24,9 @@
     "LICENSE",
     "tools/compact.mjs",
     "tools/pup-optimize.mjs",
-    "tools/pup-turn.mjs"
+    "tools/pup-turn.mjs",
+    "tools/rig-inspection.mjs",
+    "tools/bird-precision.mjs"
   ],
   "scripts": {
     "build": "node tools/build.mjs",

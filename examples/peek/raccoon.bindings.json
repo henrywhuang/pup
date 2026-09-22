@@ -1,0 +1,1130 @@
+{
+  "schema": "pup-rig-inspection",
+  "version": 1,
+  "asset": {
+    "filename": "raccoon-peek.pup",
+    "bytes": 6339,
+    "sha256": "bd9a7c8b4d8cb42486685f6dbccd528f18adb7d70c0266a127c993fb800a2200"
+  },
+  "artboard": {
+    "width": 454,
+    "height": 534
+  },
+  "conventions": {
+    "nodeRest": [
+      "x",
+      "y",
+      "rotation",
+      "scaleX",
+      "scaleY",
+      "opacity"
+    ],
+    "rotation": "radians",
+    "matrix": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "tx",
+      "ty"
+    ],
+    "vertexPoints": [
+      "anchor",
+      "incoming",
+      "outgoing"
+    ],
+    "vertexChannels": [
+      "x",
+      "y",
+      "incomingAngle",
+      "incomingLength",
+      "outgoingAngle",
+      "outgoingLength"
+    ],
+    "weights": "Flat array: vertex × 3 point roles × pivot. Signed morph coefficients are preserved; not all pivots are anatomical joints."
+  },
+  "summary": {
+    "nodes": 40,
+    "animatedNodes": 11,
+    "weightedParts": 1,
+    "morphedParts": 2,
+    "poseBanks": 0,
+    "semanticJoints": 0
+  },
+  "nodes": [
+    {
+      "index": 0,
+      "name": "Node 0",
+      "aliases": [],
+      "parent": -1,
+      "rest": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 1,
+      "name": "Node 1",
+      "aliases": [],
+      "parent": 0,
+      "rest": [
+        44.859798431396484,
+        446.3724060058594,
+        -1.9229741096496582,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "x",
+        "rotation"
+      ]
+    },
+    {
+      "index": 2,
+      "name": "Node 2",
+      "aliases": [],
+      "parent": 1,
+      "rest": [
+        395.52130126953125,
+        -85.15380096435547,
+        1.9229741096496582,
+        0.7912999987602234,
+        0.7912999987602234,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 3,
+      "name": "Node 3",
+      "aliases": [],
+      "parent": 2,
+      "rest": [
+        307,
+        339.5,
+        -0.49572062492370605,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "rotation"
+      ]
+    },
+    {
+      "index": 4,
+      "name": "Node 4",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        24,
+        38.5,
+        -1.239183783531189,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "x",
+        "y",
+        "rotation"
+      ]
+    },
+    {
+      "index": 5,
+      "name": "Node 5",
+      "aliases": [],
+      "parent": 4,
+      "rest": [
+        82.63629913330078,
+        -25.37649917602539,
+        0.33805108070373535,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 6,
+      "name": "Node 6",
+      "aliases": [],
+      "parent": 4,
+      "rest": [
+        98.81929779052734,
+        0,
+        -0.48237061500549316,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "rotation"
+      ]
+    },
+    {
+      "index": 7,
+      "name": "Node 7",
+      "aliases": [],
+      "parent": 6,
+      "rest": [
+        19.810699462890625,
+        0.5763999819755554,
+        0.8204216957092285,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 8,
+      "name": "Node 8",
+      "aliases": [],
+      "parent": 7,
+      "rest": [
+        -27.36400032043457,
+        21.370500564575195,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 9,
+      "name": "Node 9",
+      "aliases": [],
+      "parent": 7,
+      "rest": [
+        19.75,
+        -27.515499114990234,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 10,
+      "name": "Node 10",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        -144,
+        -30,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 11,
+      "name": "Node 11",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        -55.4567985534668,
+        8.520299911499023,
+        0,
+        1,
+        1.3870999813079834,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 12,
+      "name": "Node 12",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        -35,
+        92,
+        0.8891335725784302,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 13,
+      "name": "Node 13",
+      "aliases": [],
+      "parent": 12,
+      "rest": [
+        -4.4567999839782715,
+        19,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 14,
+      "name": "Node 14",
+      "aliases": [],
+      "parent": 12,
+      "rest": [
+        -10.5,
+        67,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 15,
+      "name": "Node 15",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        -99.5,
+        57,
+        0.9410850405693054,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 16,
+      "name": "Node 16",
+      "aliases": [],
+      "parent": 15,
+      "rest": [
+        4.5432000160217285,
+        31,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 17,
+      "name": "Node 17",
+      "aliases": [],
+      "parent": 15,
+      "rest": [
+        0.04320000112056732,
+        79,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 18,
+      "name": "Node 18",
+      "aliases": [],
+      "parent": 3,
+      "rest": [
+        -66.15850067138672,
+        -7.874100208282471,
+        0.20691227912902832,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 19,
+      "name": "Node 19",
+      "aliases": [],
+      "parent": 1,
+      "rest": [
+        126.1812973022461,
+        0,
+        -0.024207716807723045,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "rotation"
+      ]
+    },
+    {
+      "index": 20,
+      "name": "Node 20",
+      "aliases": [],
+      "parent": 19,
+      "rest": [
+        115.11699676513672,
+        7.698299884796143,
+        1.4925305843353271,
+        0.7912999987602234,
+        0.7912999987602234,
+        1
+      ],
+      "animatedProperties": [
+        "x"
+      ]
+    },
+    {
+      "index": 21,
+      "name": "Node 21",
+      "aliases": [],
+      "parent": 20,
+      "rest": [
+        -7.076399803161621,
+        -5.342199802398682,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 22,
+      "name": "Node 22",
+      "aliases": [],
+      "parent": 20,
+      "rest": [
+        0,
+        47.625,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 23,
+      "name": "Node 23",
+      "aliases": [],
+      "parent": 22,
+      "rest": [
+        0,
+        -3.737600088119507,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 24,
+      "name": "Node 24",
+      "aliases": [],
+      "parent": 22,
+      "rest": [
+        114.5167007446289,
+        -3.3155999183654785,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 25,
+      "name": "Node 25",
+      "aliases": [],
+      "parent": 22,
+      "rest": [
+        -127.27230072021484,
+        -3.2985999584198,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 26,
+      "name": "Node 26",
+      "aliases": [],
+      "parent": 20,
+      "rest": [
+        -135.1262969970703,
+        -98.49210357666016,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 27,
+      "name": "Node 27",
+      "aliases": [],
+      "parent": 20,
+      "rest": [
+        121.47360229492188,
+        -98.49210357666016,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 28,
+      "name": "Node 28",
+      "aliases": [],
+      "parent": 20,
+      "rest": [
+        -7.326399803161621,
+        53.707801818847656,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 29,
+      "name": "Node 29",
+      "aliases": [],
+      "parent": 28,
+      "rest": [
+        0.00009999999747378752,
+        -18.75,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "y",
+        "scaleY"
+      ]
+    },
+    {
+      "index": 30,
+      "name": "Node 30",
+      "aliases": [],
+      "parent": 29,
+      "rest": [
+        -64,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 31,
+      "name": "Node 31",
+      "aliases": [],
+      "parent": 29,
+      "rest": [
+        64,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 32,
+      "name": "Node 32",
+      "aliases": [],
+      "parent": 28,
+      "rest": [
+        0.5,
+        3.75,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 33,
+      "name": "Node 33",
+      "aliases": [],
+      "parent": 28,
+      "rest": [
+        0.08349999785423279,
+        23.25,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 34,
+      "name": "Node 34",
+      "aliases": [],
+      "parent": 1,
+      "rest": [
+        81,
+        66,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "x",
+        "rotation",
+        "scaleX"
+      ]
+    },
+    {
+      "index": 35,
+      "name": "Node 35",
+      "aliases": [],
+      "parent": 34,
+      "rest": [
+        2,
+        3.0000998973846436,
+        -2.649519681930542,
+        0.7912999987602234,
+        0.7912999987602234,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 36,
+      "name": "Node 36",
+      "aliases": [],
+      "parent": 34,
+      "rest": [
+        15.516200065612793,
+        -102.11299896240234,
+        1.9229741096496582,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": []
+    },
+    {
+      "index": 37,
+      "name": "Node 37",
+      "aliases": [],
+      "parent": 0,
+      "rest": [
+        44.859798431396484,
+        446.3724060058594,
+        -1.9229741096496582,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "x",
+        "rotation"
+      ]
+    },
+    {
+      "index": 38,
+      "name": "Node 38",
+      "aliases": [],
+      "parent": 37,
+      "rest": [
+        81,
+        66,
+        0,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "x",
+        "rotation",
+        "scaleX"
+      ]
+    },
+    {
+      "index": 39,
+      "name": "Node 39",
+      "aliases": [],
+      "parent": 38,
+      "rest": [
+        15.516200065612793,
+        -102.11299896240234,
+        1.9229741096496582,
+        1,
+        1,
+        1
+      ],
+      "animatedProperties": [
+        "opacity"
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "index": 0,
+      "name": "Part 1",
+      "node": 5,
+      "layer": 0,
+      "geometry": 0,
+      "kind": "weighted",
+      "vertexCount": 4,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": {
+        "pivots": [
+          4,
+          6
+        ],
+        "inverseBindMatrices": [
+          [
+            0.9434000253677368,
+            0.33160001039505005,
+            -0.33160001039505005,
+            0.9434000253677368,
+            82.63619995117188,
+            -25.37649917602539
+          ],
+          [
+            0.6819000244140625,
+            0.7314000129699707,
+            -0.7314000129699707,
+            0.6819000244140625,
+            -2.5648999214172363,
+            -29.988000869750977
+          ]
+        ],
+        "weights": [
+          0.6000000238418579,
+          0.4000000059604645,
+          0.6000000238418579,
+          0.4000000059604645,
+          0.6000000238418579,
+          0.4000000059604645,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0.49799999594688416,
+          0.5019999742507935,
+          0.49799999594688416,
+          0.5019999742507935,
+          0.49799999594688416,
+          0.5019999742507935,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "name": "Part 2",
+      "node": 8,
+      "layer": 0,
+      "geometry": 1,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [
+        0
+      ],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 2,
+      "name": "Part 3",
+      "node": 9,
+      "layer": 0,
+      "geometry": 2,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [
+        0
+      ],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 3,
+      "name": "Part 4",
+      "node": 10,
+      "layer": 0,
+      "geometry": 3,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 4,
+      "name": "Part 5",
+      "node": 11,
+      "layer": 0,
+      "geometry": 4,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 5,
+      "name": "Part 6",
+      "node": 13,
+      "layer": 0,
+      "geometry": 5,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 6,
+      "name": "Part 7",
+      "node": 14,
+      "layer": 0,
+      "geometry": 6,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 7,
+      "name": "Part 8",
+      "node": 16,
+      "layer": 0,
+      "geometry": 5,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 8,
+      "name": "Part 9",
+      "node": 17,
+      "layer": 0,
+      "geometry": 6,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 9,
+      "name": "Part 10",
+      "node": 18,
+      "layer": 0,
+      "geometry": 7,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 10,
+      "name": "Part 11",
+      "node": 21,
+      "layer": 0,
+      "geometry": 8,
+      "kind": "transform",
+      "vertexCount": 14,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 11,
+      "name": "Part 12",
+      "node": 23,
+      "layer": 0,
+      "geometry": 9,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [
+        1
+      ],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 12,
+      "name": "Part 13",
+      "node": 24,
+      "layer": 0,
+      "geometry": 10,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [
+        1
+      ],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 13,
+      "name": "Part 14",
+      "node": 25,
+      "layer": 0,
+      "geometry": 11,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [
+        1
+      ],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 14,
+      "name": "Part 15",
+      "node": 26,
+      "layer": 0,
+      "geometry": 12,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 15,
+      "name": "Part 16",
+      "node": 27,
+      "layer": 0,
+      "geometry": 13,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 16,
+      "name": "Part 17",
+      "node": 30,
+      "layer": 0,
+      "geometry": 14,
+      "kind": "vertex-morph",
+      "vertexCount": 4,
+      "animatedVertexChannels": [
+        2,
+        8,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        20,
+        22
+      ],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 17,
+      "name": "Part 18",
+      "node": 31,
+      "layer": 0,
+      "geometry": 15,
+      "kind": "vertex-morph",
+      "vertexCount": 4,
+      "animatedVertexChannels": [
+        2,
+        8,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        20,
+        22
+      ],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 18,
+      "name": "Part 19",
+      "node": 32,
+      "layer": 0,
+      "geometry": 16,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 19,
+      "name": "Part 20",
+      "node": 33,
+      "layer": 0,
+      "geometry": 17,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 20,
+      "name": "Part 21",
+      "node": 35,
+      "layer": 0,
+      "geometry": 18,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 21,
+      "name": "Part 22",
+      "node": 36,
+      "layer": 0,
+      "geometry": 19,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    },
+    {
+      "index": 22,
+      "name": "Part 23",
+      "node": 39,
+      "layer": 1,
+      "geometry": 19,
+      "kind": "transform",
+      "vertexCount": 0,
+      "animatedVertexChannels": [],
+      "poseCount": 0,
+      "poseSlot": null,
+      "clips": [],
+      "follow": null,
+      "binding": null
+    }
+  ],
+  "skeleton": null,
+  "clips": [
+    {
+      "name": "peek",
+      "duration": 1.875,
+      "tracks": 28
+    },
+    {
+      "name": "back",
+      "duration": 0.7142857313156128,
+      "tracks": 19
+    }
+  ]
+}

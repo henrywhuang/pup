@@ -2,10 +2,13 @@
 // and shared geometry; this changes no byte format and needs no runtime patch.
 import {decodePup} from '../src/format.js';
 import {encodePup} from './compiler.mjs';
-export function optimizePup(input) {
+export function optimizePup(input, inspection = null) {
  const before=Buffer.from(input),art=decodePup(before.toString('base64'));
  // PUP2 already packs pose references; a compressed wrapper must stay compressed.
- if (before.subarray(0,4).toString() !== 'PUP1') return before;
+ if (before.subarray(0,4).toString() !== 'PUP1') {
+  if (inspection) inspection.nodeMap=Array.from({length:art.nodeParent.length},(_,i)=>i);
+  return before;
+ }
  // A constant reset in a sparse clip is necessary when another clip changes
  // that channel, even when the reset value equals the authored rest pose.
  const changedSlots=new Set();
@@ -30,5 +33,6 @@ export function optimizePup(input) {
  for(const g of art.geoms)if(g.verts)g.slot=remapSlot(g.slot);
  for(const clip of art.clock.clips)for(const t of clip.tracks){t[0]=remapSlot(t[0]);t[1]=remapSlot(t[1]);}
  art.nodeParent=parents;art.nodeRest=new Float32Array(rest);art.slots-=shift;
+ if (inspection) inspection.nodeMap=nodeMap;
  return encodePup(art);
 }

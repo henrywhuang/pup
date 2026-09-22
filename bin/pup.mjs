@@ -7,6 +7,7 @@ import { compile, encodePup, decodePup } from '../tools/compiler.mjs';
 import { optimizePup } from '../tools/optimize.mjs';
 import {packPup,unpackPup} from '../tools/compact.mjs';
 import {parsePuc} from '../src/puc.js';
+import {inspectFile} from '../tools/rig-inspection.mjs';
 
 const [command, ...args] = process.argv.slice(2);
 const usage = [
@@ -14,6 +15,7 @@ const usage = [
   'pup inspect <animation.pup>',
   'pup optimize <input.pup> [output.pup]',
   'pup pack <input.pup> [output.pup]',
+  'pup bindings <input.pup> [output.json]',
   'pup prepare <reference.webp> <artwork.svg> <output-directory> [--fps 24]',
 ].join('\n');
 try {
@@ -28,6 +30,10 @@ try {
       ? {container:'PUC1', ...decodePup(encodePup((await parsePuc(bytes)).art))}
       : decodePup(bytes);
     console.log(JSON.stringify(data, null, 2));
+  } else if (command === 'bindings' && args.length >= 1 && args.length <= 2) {
+    const data = JSON.stringify(await inspectFile(args[0]), null, 2) + '\n';
+    if (args[1]) fs.writeFileSync(args[1], data);
+    else process.stdout.write(data);
   } else if (command === 'optimize' && args.length >= 1 && args.length <= 2) {
     const input = fs.readFileSync(args[0]), output = optimizePup(input);
     fs.writeFileSync(args[1] ?? args[0], output);
