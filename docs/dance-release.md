@@ -1,7 +1,7 @@
 # Dance examples and preview compatibility — 2026-09-22
 
-The first two examples are Fox dance and Raccoon dance, with PUP displayed
-before the WebP reference. The third is the supplied little bird turnaround
+The first two examples are Fox dance and Raccoon dance, with the original
+on the left and PUP on the right. The third is the supplied little bird turnaround
 HTML, replayed by the shared player with its eight explicit joints. Existing
 WebP, Rive and SVG comparisons remain available.
 

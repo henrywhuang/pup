@@ -43,8 +43,6 @@ function controls() {
   const example = selectedCase();
   H = example ? 608 : 378;
   $('#stages').style.setProperty('--stage-ratio', example ? '1' : '608/378');
-  const primary = $(example ? '#pup-stage' : '#source-stage');
-  if ($('#stages').firstElementChild !== primary) $('#stages').insertBefore(primary, $('#stages').firstElementChild);
   $('#actions').hidden = !!example;
   $('#bones').disabled = !example?.bones;
   $('#bones').checked = !!example?.bones && state.bones;
