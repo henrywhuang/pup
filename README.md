@@ -115,7 +115,7 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 | Example | PUP file | Contents |
 | --- | ---: | --- |
 | Fox dance | 87,035 B | `dance` · PUP2 cubic pose banks |
-| Raccoon dance | 21,021 B | `dance` · lossless PUPZ (31,068 B plain PUP1) |
+| Raccoon dance | 21,940 B | `dance` · lossless PUPZ (33,070 B plain PUP1) |
 | Bird dance | 9,575 B | `dance` · lossless PUPZ · 4.033 seconds |
 | Little bird | 68,136 B | `turn` · PUC1, with a separate eight-joint map |
 | Fox feedback | 12,669 B | `correct` + `wrong` |
