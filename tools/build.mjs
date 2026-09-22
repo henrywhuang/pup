@@ -12,7 +12,7 @@ const root = path.resolve(import.meta.dirname, '..');
 process.chdir(root);
 const dist = path.join(root, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
-for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'assets/dance/fox', 'assets/dance/raccoon', 'assets/bird', 'vendor', 'frames', 'downloads']) {
+for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'assets/dance/fox', 'assets/dance/raccoon', 'assets/bird', 'assets/bird/views', 'vendor', 'frames', 'downloads']) {
   fs.mkdirSync(path.join(dist, dir), { recursive: true });
 }
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').slice(0, 12);
@@ -93,15 +93,19 @@ for (const character of ['fox', 'raccoon']) {
     compatibility:character==='raccoon'?copy(source+'animation.compat.pup',target+'animation.compat.pup'):null});
 }
 const birdMapping = JSON.parse(fs.readFileSync('examples/bird/rig.json'));
-const birdReference = JSON.parse(fs.readFileSync('examples/bird/reference.json'));
+const birdViews = JSON.parse(fs.readFileSync('examples/bird/views/index.json')).views.map(view => ({
+  ...view, ...copy('examples/bird/views/' + view.file, 'assets/bird/views/' + view.file),
+}));
+const birdSourceBytes = birdViews.reduce((sum, view) => sum + view.bytes, 0);
 manifest.cases.push({id:'bird-turn',character:'bird',title:'Little bird turn',clip:'turn',
   duration:birdMapping.durationMs/1000,width:460,height:460,shapes:0,
   pup:copy('examples/bird/turn.puc','assets/bird/turn.puc'),bones:birdMapping.bones,
   rig:copy('examples/bird/rig.json','assets/bird/rig.json'),
-  reference:{...birdReference,kind:'html',original:copy('examples/bird/source.html','assets/bird/source.html'),
-    sheet:copy('examples/bird/reference.webp','assets/bird/reference.webp').url},
+  preview:copy('examples/bird/source.html','assets/bird/source.html'),
+  reference:{kind:'svg-views',views:birdViews,original:{bytes:birdSourceBytes},
+    framing:{top:48/460,height:358/460}},
   phase:'Front · back · front',
-  note:'The same embedded PUC1 animation is loaded by the shared PUP player. The reference is captured from the supplied HTML at 60 Hz; its file size includes the embedded player and base64 data. Bones show its eight supplied joints.'});
+  note:'Seven original SVG views from the supplied Figma export are shown on the left. Choose a static view below, then scrub the PUP turnaround to compare. The source size is the seven SVG files only; the PUC file adds the animation. Bones show its eight supplied joints.'});
 const downloads = manifest.cases.map(example => ({...example.pup,
   name:example.id+(example.id==='bird-turn'?'.puc':'.pup'),character:example.character==='bird'?'Little bird':example.character==='fox'?'Fox':'Raccoon',
   title:example.clip==='dance'?'Dance':'Turnaround',detail:example.clip==='dance'?'One complete dance action':'Front to back and return · 8 joints',

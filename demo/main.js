@@ -85,6 +85,26 @@ function logicalContext(canvas) {
   ctx.scale(canvas.width / W, canvas.height / H);
   return ctx;
 }
+
+function sourceViews() {
+  const strip = $('#source-views');
+  strip.replaceChildren(); strip.hidden = !current?.views;
+  if (!current?.views) return;
+  current.views.forEach((view, index) => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.setAttribute('aria-label', 'Show original ' + view.label.toLowerCase());
+    button.setAttribute('aria-pressed', String(index === current.sourceView));
+    const image = document.createElement('img'); image.src = view.url; image.alt = '';
+    const label = document.createElement('span'); label.textContent = view.label;
+    button.append(image, label);
+    button.addEventListener('click', () => {
+      setPlaying(false); current.sourceView = index;
+      [...strip.children].forEach((node, i) => node.setAttribute('aria-pressed', String(i === index)));
+      render();
+    });
+    strip.append(button);
+  });
+}
 function frameAt(time) {
   const frames = current?.timing?.frames;
   if (!frames) return Math.round(time * 60);
@@ -138,7 +158,12 @@ function render() {
     }
   } else {
     const left = logicalContext(reference);
-    if (current.timing) {
+    if (current.views) {
+      const index = current.sourceView, view = current.views[index], framing = current.framing;
+      const height = H * framing.height, width = height * view.width / view.height;
+      left.drawImage(current.images[index], (W - width) / 2, H * framing.top, width, height);
+      $('#source-title').textContent = 'Original SVG · ' + view.label;
+    } else if (current.timing) {
       const timing = current.timing;
       if (frameSource !== current.image || copiedFrame !== index) {
         if (frameCanvas.width !== timing.width || frameCanvas.height !== timing.height) {
@@ -206,20 +231,23 @@ async function select() {
   let next;
   try {
     if (example) {
-      const [pup,image] = await Promise.all([loadPup(example.pup.url),loadImage(example.reference.sheet)]);
+      const views = example.reference.views;
+      const [pup,images] = await Promise.all([loadPup(example.pup.url),
+        Promise.all((views ? views.map(view => view.url) : [example.reference.sheet]).map(loadImage))]);
       if (version !== loadVersion) return;
-      next = {pup,image,timing:example.reference,svg:createSvgRenderer(pup),bones:example.bones,title:example.title,phase:example.phase};
+      next = {pup,image:images[0],images,views,sourceView:0,framing:example.reference.framing,
+        timing:views ? null : example.reference,svg:createSvgRenderer(pup),bones:example.bones,title:example.title,phase:example.phase};
       state.duration = example.duration;
-      $('#source-title').textContent = example.reference.kind === 'html' ? 'Original HTML rendering' : 'Original animation';
-      $('#source-format').textContent = example.reference.kind === 'html' ? 'HTML / CANVAS CAPTURE' : 'WEBP';
+      $('#source-title').textContent = views ? 'Original SVG views' : 'Original animation';
+      $('#source-format').textContent = views ? '7 SVG VIEWS' : 'WEBP';
       $('#source-size').textContent = size(example.reference.original.bytes);
-      $('#source-caption').textContent = example.reference.kind === 'html' ? 'HTML bundle · player + base64 animation' : 'Original WebP file';
+      $('#source-caption').textContent = views ? 'Seven static SVG files · artwork only' : 'Original WebP file';
       $('#pup-size').textContent = size(example.pup.bytes);
       $('#pup-caption').textContent = 'One ' + example.clip + ' action · ' + example.duration.toFixed(3) + ' s';
       $('#download').href = example.pup.url;
       $('#comparison-note').textContent = example.note;
       $('#geometry').textContent = pup.art.shapes.length + ' shapes · ' + (example.bones ? Object.keys(example.bones).length + ' joints' : 'vector motion');
-      $('#fidelity-note').textContent = example.reference.kind === 'html' ? 'The same animation data in the original HTML and the shared player. The reference is a captured rendering, not a separate reconstruction.' : 'The approved animation file is preserved. Differences include artwork choices, vector reconstruction and rasterization.';
+      $('#fidelity-note').textContent = views ? 'The original seven SVGs are static views. PUP adds continuous motion and rig data. The source size excludes HTML, base64 and player code.' : 'The approved animation file is preserved. Differences include artwork choices, vector reconstruction and rasterization.';
     } else if (state.mode === 'rive') {
       const spec = manifest.peek[state.character];
       const [pup, rive] = await Promise.all([loadPup(spec.pup.url), RiveReference.create(spec, manifest.runtime.rive)]);
@@ -257,12 +285,15 @@ async function select() {
     current?.rive?.dispose(); current?.svg?.dispose();
     current = next;
     frameSource = null; copiedFrame = -1;
+    sourceViews();
     $('#svg-output').replaceChildren(...(next.svg ? [next.svg.svg] : []));
     $('#download').download = example ? example.id + (example.id === 'bird-turn' ? '.puc' : '.pup') : state.character + '-' + (state.mode === 'rive' ? 'peek' : 'reactions') + '.pup';
     $('#download').textContent = example?.id === 'bird-turn' ? '↓ Download PUC' : '↓ Download PUP';
     const url = new URL(location.href); url.searchParams.set('example',state.mode); history.replaceState(null,'',url);
     // Large reference sheets are only retained for the active comparison.
-    for (const [key,promise] of imageCache) if (key !== (example?.reference.sheet || (state.mode === 'webp' ? manifest.quiz.fox.actions[state.action].reference.sheet : state.mode === 'skin' ? manifest.quiz.raccoon.artwork.url : null))) imageCache.delete(key);
+    const activeImages = new Set(example?.reference.views?.map(view => view.url) || [example?.reference.sheet ||
+      (state.mode === 'webp' ? manifest.quiz.fox.actions[state.action].reference.sheet : state.mode === 'skin' ? manifest.quiz.raccoon.artwork.url : null)]);
+    for (const key of imageCache.keys()) if (!activeImages.has(key)) imageCache.delete(key);
     $('#download').setAttribute('aria-label', 'Download ' + $('#download').download);
     $('#download').removeAttribute('aria-disabled');
     state.loading = false; $('#loading').hidden = true;

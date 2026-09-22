@@ -1,8 +1,8 @@
 # Dance examples and preview compatibility — 2026-09-22
 
 The first two examples are Fox dance and Raccoon dance, with the original
-on the left and PUP on the right. The third is the supplied little bird turnaround
-HTML, replayed by the shared player with its eight explicit joints. Existing
+on the left and PUP on the right. The third compares seven original bird SVG
+views with the turnaround animation and its eight explicit joints. Existing
 WebP, Rive and SVG comparisons remain available.
 
 ## Player changes
@@ -44,6 +44,12 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 The two dance files are preserved byte for byte and can be reproduced from
 the checked-in rigs. The bird file is extracted unchanged from `source.html`.
 Downloads include the seven main examples, the bone map and the PUP1 fallback.
+
+The bird's seven source SVGs are extracted unchanged from `preview-v5.html`
+and total **48,123 bytes**. They are static views; the 68,136-byte PUC adds
+motion data. The comparison excludes the HTML bundle and base64 overhead.
+Users can select any original view on the left and scrub the animation on the
+right. The original responsive stage dimensions are preserved.
 
 ## Validation
 

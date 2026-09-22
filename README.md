@@ -14,8 +14,8 @@ Canvas or native SVG, with no WASM and no runtime package dependencies.
 
 - **01 Fox dance / 02 Raccoon dance:** the approved dance files, with the
   original WebP on the left and PUP on the right. Both downloads are preserved byte for byte.
-- **03 Little bird:** the supplied HTML turnaround preview in the shared
-  player, including its eight moving joints in Canvas and SVG.
+- **03 Little bird:** seven original SVG views on the left, the supplied
+  turnaround animation on the right, including eight moving joints in Canvas and SVG.
 - **WebP / PUP:** the original fox reference and its vector reconstruction,
   with synchronized scrubbing, frame stepping, overlay and pixel difference.
 - **Rive / PUP:** original fox/raccoon body and hand Rive artboards beside the

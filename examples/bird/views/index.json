@@ -1,0 +1,61 @@
+{
+  "source": "preview-v5.html · embedded Figma original seven views",
+  "views": [
+    {
+      "file": "front.svg",
+      "label": "Front",
+      "sourceLabel": "正面",
+      "width": 239.556,
+      "height": 313.95,
+      "bytes": 8226
+    },
+    {
+      "file": "slight-side.svg",
+      "label": "Slight turn",
+      "sourceLabel": "常用侧视",
+      "width": 236.319,
+      "height": 313.51,
+      "bytes": 9493
+    },
+    {
+      "file": "three-quarter.svg",
+      "label": "Three-quarter",
+      "sourceLabel": "四分之三侧视",
+      "width": 239.248,
+      "height": 314.1,
+      "bytes": 9749
+    },
+    {
+      "file": "side.svg",
+      "label": "Side",
+      "sourceLabel": "侧面",
+      "width": 249.449,
+      "height": 313.41,
+      "bytes": 7389
+    },
+    {
+      "file": "back-three-quarter.svg",
+      "label": "Back three-quarter",
+      "sourceLabel": "四分之三背侧视",
+      "width": 244.853,
+      "height": 315.75,
+      "bytes": 5006
+    },
+    {
+      "file": "near-back.svg",
+      "label": "Near back",
+      "sourceLabel": "近背面",
+      "width": 235.739,
+      "height": 315.581,
+      "bytes": 4636
+    },
+    {
+      "file": "back.svg",
+      "label": "Back",
+      "sourceLabel": "背面",
+      "width": 238.434,
+      "height": 314.458,
+      "bytes": 3624
+    }
+  ]
+}
