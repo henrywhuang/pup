@@ -74,7 +74,7 @@ for (const action of ['correct', 'wrong']) {
 }
 const dances = [
   {character:'fox',label:'Fox',phase:'Step · turn · clap',
-    note:'The supplied 87,035-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
+    note:'The supplied 85,387-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
   {character:'raccoon',label:'Raccoon',phase:'Step · sway · return',
     note:'The supplied compact release is preserved. Colors come from the SVG; the WebP supplies the motion reference. The tail follows the body with a delayed tip.'},
   {character:'bird',label:'Bird',phase:'Bird dance',

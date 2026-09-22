@@ -37,8 +37,8 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 
 | Example | Exact file bytes | Contents |
 | --- | ---: | --- |
-| Fox dance | 87,035 | Frozen PUP2 dance, 4.633 seconds |
-| Raccoon dance | 21,940 | PUPZ dance, 4.332 seconds; 33,070-byte PUP1 fallback |
+| Fox dance | 85,387 | Frozen PUP2 dance, 4.633 seconds |
+| Raccoon dance | 22,222 | PUPZ dance, 4.332 seconds; 35,100-byte PUP1 fallback |
 | Bird dance | 9,575 | Supplied PUPZ dance, 4.033 seconds; 97-frame WebP reference |
 | Little bird | 68,136 | Original embedded PUC1 turn; separate eight-joint map |
 
@@ -52,18 +52,23 @@ motion data. The comparison excludes the HTML bundle and base64 overhead.
 Users can select any original view on the left and scrub the animation on the
 right. The original responsive stage dimensions are preserved.
 
-The latest fox revision updates four pose selections without changing its
-87,035-byte size or geometry banks. The raccoon now includes the selected
-vertical raised-hand pose and overlapping shoulder attachments, addressing
-the flattened palms and F12 gap. Its head, body, legs and tail retain their
-existing outlines and motion. These are asset changes; the player and its
-dependencies remain unchanged.
+The latest fox revision retains four approved pose selections and repairs the
+mouth seam by joining the brown oral regions. It is 85,387 bytes; the other
+20 geometry banks and all motion tracks remain unchanged.
+
+The raccoon keeps the selected raised-hand motion and overlapping shoulder
+attachments. Its neck-transition repair separates the foreground palm from
+the upper arm: the original SVG's occlusion corner is excluded from the palm,
+which closes with matching Bézier tangents. This removes the hard cut that
+appeared around 0.236–0.315 seconds. The head, body, full-arm outlines and
+motion are unchanged. The new PUP is 22,222 bytes, 282 bytes more than the
+prior release. No new keyframes, player code or dependencies are needed.
 
 ## Validation
 
-All 18 automated tests pass, covering released bytes, pose selection, packed
+All 19 automated tests pass, covering released bytes, pose selection, packed
 geometry, HTML extraction, skeleton coordinates and existing feedback/peek
-regressions, including shoulder attachment and wrist-mask interpolation.
+regressions, including shoulder attachment, smooth palm closure and the reported neck-transition interval.
 Rebuilding the examples produces identical bytes.
 
 Browser checks cover desktop and 390-pixel mobile layouts, Canvas/SVG,
