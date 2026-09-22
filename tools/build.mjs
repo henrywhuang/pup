@@ -12,7 +12,7 @@ const root = path.resolve(import.meta.dirname, '..');
 process.chdir(root);
 const dist = path.join(root, 'dist');
 fs.rmSync(dist, { recursive: true, force: true });
-for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'assets/dance/fox', 'assets/dance/raccoon', 'assets/bird', 'assets/bird/views', 'vendor', 'frames', 'downloads']) {
+for (const dir of ['', 'assets/fox', 'assets/raccoon', 'assets/peek', 'assets/dance/fox', 'assets/dance/raccoon', 'assets/dance/bird', 'assets/bird', 'assets/bird/views', 'vendor', 'frames', 'downloads']) {
   fs.mkdirSync(path.join(dist, dir), { recursive: true });
 }
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').slice(0, 12);
@@ -72,12 +72,20 @@ for (const action of ['correct', 'wrong']) {
     ...timing, original: webp, sheet: 'frames/' + action + '/frames.webp?v=' + hash(frameBytes),
   };
 }
-for (const character of ['fox', 'raccoon']) {
+const dances = [
+  {character:'fox',label:'Fox',phase:'Step · turn · clap',
+    note:'The supplied 87,035-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
+  {character:'raccoon',label:'Raccoon',phase:'Step · sway · return',
+    note:'The supplied compact release is preserved. Colors come from the SVG; the WebP supplies the motion reference. The tail follows the body with a delayed tip.'},
+  {character:'bird',label:'Bird',phase:'Bird dance',
+    note:'The supplied 9,575-byte PUP is preserved. One 4.033-second dance, compared with the original 97-frame WebP on the same clock.'},
+];
+for (const {character, label, phase, note} of dances) {
   const source = 'examples/dance/' + character + '/', target = 'assets/dance/' + character + '/';
   const pup = copy(source + 'animation.pup', target + 'animation.pup');
   const model = parsePup(fs.readFileSync(source + 'animation.pup'));
   const duration = durationOf(model, 'dance'), output = path.join(dist, 'frames', character + '-dance');
-  const result = spawnSync(process.env.PUP_PYTHON || 'python3', ['tools/prepare.py', source + 'reference.webp', source + 'rig.svg', output, '--frames-only'], {stdio:'inherit'});
+  const result = spawnSync(process.env.PUP_PYTHON || 'python3', ['tools/prepare.py', source + 'reference.webp', '-', output, '--frames-only'], {stdio:'inherit'});
   if (result.status !== 0) throw new Error('Could not prepare ' + character + ' dance reference');
   const full = JSON.parse(fs.readFileSync(path.join(output, 'reference.json')));
   const frames = full.frames.filter(f => f.start < Math.round(duration * 1000));
@@ -85,11 +93,9 @@ for (const character of ['fox', 'raccoon']) {
     originalFrameCount:full.frameCount, originalDuration:full.duration, kind:'webp',
     original:copy(source + 'reference.webp', target + 'reference.webp'),
     sheet:'frames/' + character + '-dance/frames.webp?v=' + hash(fs.readFileSync(path.join(output, 'frames.webp')))};
-  const label = character === 'fox' ? 'Fox' : 'Raccoon';
   manifest.cases.push({id:character+'-dance', character, title:label+' dance', clip:'dance', duration,
     width:model.art.w,height:model.art.h,pup,reference,shapes:model.art.shapes.length,
-    bones:null, phase:character==='fox'?'Step · turn · clap':'Step · sway · return',
-    note:character==='fox'?'The supplied 87,035-byte release is preserved. Compare its first 4.633 seconds with the original WebP; the source’s extra final hold is omitted.':'The supplied compact release is preserved. Colors come from the SVG; the WebP supplies the motion reference. The tail follows the body with a delayed tip.',
+    bones:null, phase, note,
     compatibility:character==='raccoon'?copy(source+'animation.compat.pup',target+'animation.compat.pup'):null});
 }
 const birdMapping = JSON.parse(fs.readFileSync('examples/bird/rig.json'));
@@ -107,7 +113,7 @@ manifest.cases.push({id:'bird-turn',character:'bird',title:'Little bird turn',cl
   phase:'Front · back · front',
   note:'Seven original SVG views from the supplied Figma export are shown on the left. Choose a static view below, then scrub the PUP turnaround to compare. The source size is the seven SVG files only; the PUC file adds the animation. Bones show its eight supplied joints.'});
 const downloads = manifest.cases.map(example => ({...example.pup,
-  name:example.id+(example.id==='bird-turn'?'.puc':'.pup'),character:example.character==='bird'?'Little bird':example.character==='fox'?'Fox':'Raccoon',
+  name:example.id+(example.id==='bird-turn'?'.puc':'.pup'),character:example.id==='bird-turn'?'Little bird':({fox:'Fox',raccoon:'Raccoon',bird:'Bird'})[example.character],
   title:example.clip==='dance'?'Dance':'Turnaround',detail:example.clip==='dance'?'One complete dance action':'Front to back and return · 8 joints',
   compatibility:example.compatibility,rig:example.rig}));
 

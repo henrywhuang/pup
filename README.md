@@ -14,7 +14,8 @@ Canvas or native SVG, with no WASM and no runtime package dependencies.
 
 - **01 Fox dance / 02 Raccoon dance:** the approved dance files, with the
   original WebP on the left and PUP on the right. Both downloads are preserved byte for byte.
-- **03 Little bird:** seven original SVG views on the left, the supplied
+- **03 Bird dance:** the supplied 9,575-byte PUP beside its 97-frame WebP reference.
+- **04 Little bird:** seven original SVG views on the left, the supplied
   turnaround animation on the right, including eight moving joints in Canvas and SVG.
 - **WebP / PUP:** the original fox reference and its vector reconstruction,
   with synchronized scrubbing, frame stepping, overlay and pixel difference.
@@ -27,7 +28,7 @@ animation assets are reported separately. PUP is a focused character player;
 Rive provides a much broader editor and runtime system.
 
 The demo has a **Download PUP** button below the current animation. Its
-Downloads section offers all seven example animations individually or in one ZIP.
+Downloads section offers all eight example animations individually or in one ZIP.
 The bird uses `.puc` plus a downloadable bone map; the ZIP includes that map
 and the raccoon's unwrapped PUP1 compatibility file.
 Each reaction file contains both the correct and wrong actions.
@@ -67,7 +68,8 @@ node bin/pup.mjs import work/rig.svg work/motion.json work/animation.pup
 Preparation extracts frame timing, a lossless scrubber sheet and SVG part IDs.
 It does not automatically infer a finished rig or expression shapes. Use the
 [reconstruction prompt](prompts/rebuild-pup.md) for the agent-assisted workflow.
-The included feedback and dance rigs compile to the exact distributed PUP bytes.
+The included feedback and fox/raccoon dance rigs compile to the exact distributed PUP bytes.
+Bird dance preserves the supplied PUP and WebP files without re-authoring them.
 The bird preserves the animation embedded in its original HTML preview.
 
 > **Author's workflow note:** Only **Astra + max reasoning** worked reliably
@@ -114,6 +116,7 @@ another renderer; the business application uses Skia on mobile. See [the API](do
 | --- | ---: | --- |
 | Fox dance | 87,035 B | `dance` · PUP2 cubic pose banks |
 | Raccoon dance | 21,021 B | `dance` · lossless PUPZ (31,068 B plain PUP1) |
+| Bird dance | 9,575 B | `dance` · lossless PUPZ · 4.033 seconds |
 | Little bird | 68,136 B | `turn` · PUC1, with a separate eight-joint map |
 | Fox feedback | 12,669 B | `correct` + `wrong` |
 | Raccoon feedback | 14,563 B | `correct` + `wrong` |
