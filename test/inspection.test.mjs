@@ -50,7 +50,7 @@ test('pose-bank fox is not falsely advertised as a skeleton', () => {
 
 test('compiled fox authoring data reproduces the approved file and its real part names', async () => {
   const data=await inspectFile(file('dance/fox/animation.pup'),{compiled:file('dance/fox/rig.json')});
-  assert.equal(data.asset.sha256,'d75be1b7e972567e1df29416fc860012ac83becbd3bd53ff1b15692ce38f6134');
+  assert.equal(data.asset.sha256,'077b91411cc61d59b6ca44bc80a7448ca2d133925e909e1508b9717686a458de');
   assert(data.nodes.some(n=>n.name==='tail'));
   assert(data.parts.some(p=>p.name==='tail-cream'&&p.kind==='transform'));
   assert(data.parts.some(p=>p.name==='muzzle-nose'&&p.poseCount===56));

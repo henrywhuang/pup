@@ -14,7 +14,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
 test('dance sources reproduce the approved downloads without altering their motion', () => {
   for (const [character, size, hash] of [
-    ['fox', 76541, 'd75be1b7e972567e1df29416fc860012ac83becbd3bd53ff1b15692ce38f6134'],
+    ['fox', 76100, '077b91411cc61d59b6ca44bc80a7448ca2d133925e909e1508b9717686a458de'],
     ['raccoon', 22222, '0b518a49ae3f52a2a44c5126bfc5754b74cf1210578a09af7ad021cabef7e546'],
   ]) {
     const base = 'dance/' + character + '/';

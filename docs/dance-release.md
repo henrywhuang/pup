@@ -37,7 +37,7 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 
 | Example | Exact file bytes | Contents |
 | --- | ---: | --- |
-| Fox dance | 76,541 | Approved G, PUPZ / PUP2, 56 foreground poses, 4.633 seconds |
+| Fox dance | 76,100 | Approved G, PUPZ / PUP2, 56 foreground poses, 4.633 seconds |
 | Raccoon dance | 22,222 | PUPZ dance, 4.332 seconds; 35,100-byte PUP1 fallback |
 | Bird dance | 9,575 | Supplied PUPZ dance, 4.033 seconds; 97-frame WebP reference |
 | Little bird | 68,136 | Original embedded PUC1 turn; separate eight-joint map |
@@ -53,17 +53,21 @@ Users can select any original view on the left and scrub the animation on the
 right. The original responsive stage dimensions are preserved.
 
 The latest fox is the same approved G file now used by Piyo Mobile and Web:
-76,541 bytes, SHA-256
-`d75be1b7e972567e1df29416fc860012ac83becbd3bd53ff1b15692ce38f6134`.
+76,100 bytes, SHA-256
+`077b91411cc61d59b6ca44bc80a7448ca2d133925e909e1508b9717686a458de`.
 It includes the F108 shoulder correction, continuous cheek/body boundaries,
 a regular stepping cycle and a fixed complete tail reusing the opening sway.
 The latest repair removes backwards torso-to-leg connectors and keeps the
 complete tail behind the body during turn entry, instead of retaining a
 body-colored tail fragment. F059/F060 share the rounded front-arm construction,
 removing jagged paint-intersection vertices. Offline decoded-PUP checks cover
-223 frame/midpoint samples; F062 onward, the loop and held clap feet remain
-pixel-identical to the preceding release. No poses, nodes or paint slots are
-added.
+223 frame/midpoint samples; F062–F104, F110 onward, the loop and held clap
+feet remain pixel-identical to the earlier release. F105–F109 now return
+between the existing planted stances with one continuous torso/leg outline.
+The upper colored contours are preserved, with sparse edge antialiasing
+changes from union and quantization. The largest adjacent-frame foot-center
+shift drops from 8.23 to 2.37 art units; decoded hip contours remain connected.
+No poses, nodes or paint slots are added.
 The checked-in `examples/dance/fox/rig.json` compiled-art snapshot rebuilds its
 exact bytes; the binding inspector reads its real tail/body transforms and
 foreground pose banks. The superseded SVG/motion snapshots remain in Git
