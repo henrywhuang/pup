@@ -14,15 +14,17 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
 test('dance sources reproduce the approved downloads without altering their motion', () => {
   for (const [character, size, hash] of [
-    ['fox', 85183, 'c2fc38fba7ef4ae41d85282e851ded54b41f65d01bf7964bb7f7e6b010aa67b4'],
+    ['fox', 76557, '1492c331a8ea7cc8eab3fdb5c48ee11b2dc8081365c1028dd5e2764d9e90a91f'],
     ['raccoon', 22222, '0b518a49ae3f52a2a44c5126bfc5754b74cf1210578a09af7ad021cabef7e546'],
   ]) {
     const base = 'dance/' + character + '/';
     const bytes = read(base + 'animation.pup');
     assert.equal(bytes.length, size);
     assert.equal(sha(bytes), hash);
-    const raw = optimizePup(encodePup(compile(file(base + 'rig.svg'), file(base + 'motion.json'))));
-    assert.equal(sha(character === 'raccoon' ? packPup(raw).bytes : raw), hash);
+    const source = character === 'fox' ? JSON.parse(read(base + 'rig.json'))
+      : compile(file(base + 'rig.svg'), file(base + 'motion.json'));
+    const raw = optimizePup(encodePup(source));
+    assert.equal(sha(packPup(raw).bytes), hash);
     assert.deepEqual(Buffer.from(optimizePup(bytes)), bytes, 'Optimization must preserve these containers');
     const puppet = parsePup(bytes);
     assert.deepEqual(puppet.art.clock.clips.map(c => c.name), ['dance']);
@@ -32,9 +34,12 @@ test('dance sources reproduce the approved downloads without altering their moti
 
 test('fox pose banks select the exact stored pose at every key and backward seek', () => {
   const bytes = read('dance/fox/animation.pup'), puppet = parsePup(bytes);
-  const track = puppet.art.clock.clips[0].tracks[0];
   const poseGeoms = puppet.art.geoms.map((g, i) => g.poses ? i : -1).filter(i => i >= 0);
-  assert.equal(poseGeoms.length, 23);
+  assert.equal(poseGeoms.length, 24);
+  const slot = puppet.art.geoms[poseGeoms[0]].slot;
+  const track = puppet.art.clock.clips[0].tracks.find(t => t[0] === slot);
+  assert(track, 'The shared pose controller must have its own track');
+  assert(poseGeoms.every(i => puppet.art.geoms[i].poses.length === 56));
   for (let key = 3; key < track.length; key += 3) {
     for (const time of [track[key], key + 3 < track.length ? (track[key] + track[key + 3]) / 2 : track[key]]) {
       poseAt(puppet, time, 'dance');

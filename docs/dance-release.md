@@ -1,4 +1,4 @@
-# Dance examples and preview compatibility — 2026-09-22
+# Dance examples and preview compatibility — 2026-09-23
 
 The first two examples are Fox dance and Raccoon dance, with the original
 on the left and PUP on the right. Bird dance is third. The fourth compares seven original bird SVG
@@ -37,7 +37,7 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 
 | Example | Exact file bytes | Contents |
 | --- | ---: | --- |
-| Fox dance | 85,183 | Frozen PUP2 dance, 4.633 seconds |
+| Fox dance | 76,557 | Approved G, PUPZ / PUP2, 56 foreground poses, 4.633 seconds |
 | Raccoon dance | 22,222 | PUPZ dance, 4.332 seconds; 35,100-byte PUP1 fallback |
 | Bird dance | 9,575 | Supplied PUPZ dance, 4.033 seconds; 97-frame WebP reference |
 | Little bird | 68,136 | Original embedded PUC1 turn; separate eight-joint map |
@@ -52,10 +52,15 @@ motion data. The comparison excludes the HTML bundle and base64 overhead.
 Users can select any original view on the left and scrub the animation on the
 right. The original responsive stage dimensions are preserved.
 
-The latest fox revision retains four approved pose selections and repairs the
-mouth seam by joining the brown oral regions. Its subsequent sole and
-tail-root cleanup is also included. The current file is 85,183 bytes and
-all motion tracks are unchanged.
+The latest fox is the same approved G file now used by Piyo Mobile and Web:
+76,557 bytes, SHA-256
+`1492c331a8ea7cc8eab3fdb5c48ee11b2dc8081365c1028dd5e2764d9e90a91f`.
+It includes the F108 shoulder correction, continuous cheek/body boundaries,
+a regular stepping cycle and a fixed complete tail reusing the opening sway.
+The checked-in `examples/dance/fox/rig.json` compiled-art snapshot rebuilds its
+exact bytes; the binding inspector reads its real tail/body transforms and
+foreground pose banks. The superseded SVG/motion snapshots remain in Git
+history. This asset update adds no player runtime code or npm dependency.
 
 The raccoon keeps the selected raised-hand motion and overlapping shoulder
 attachments. Its neck-transition repair separates the foreground palm from
@@ -67,12 +72,12 @@ prior release. No new keyframes, player code or dependencies are needed.
 
 ## Validation
 
-All 23 automated tests pass, covering released bytes, pose selection, packed
+All 24 automated tests pass, covering released bytes, pose selection, packed
 geometry, HTML extraction, skeleton coordinates and existing feedback/peek
 regressions, including shoulder attachment, smooth palm closure and the reported neck-transition interval.
 Rebuilding the examples produces identical bytes.
 
-Browser checks cover desktop and 390-pixel mobile layouts, Canvas/SVG,
+The preceding 2026-09-22 browser checks covered desktop and 390-pixel mobile layouts, Canvas/SVG,
 forward/reverse playback, seek, loop, speed, overlays, outlines, bone toggles,
 case switches and real downloads. The default dance page requests no Rive or
 WASM files. The bird's Canvas render is pixel-identical to the original HTML

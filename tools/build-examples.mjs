@@ -13,10 +13,13 @@ for (const character of ['fox', 'raccoon']) {
 }
 for (const character of ['fox', 'raccoon', 'bird']) {
   const base = 'examples/dance/' + character + '/';
-  let raw = optimizePup(encodePup(compile(base + 'rig.svg', base + 'motion.json')));
+  const source = character === 'fox'
+    ? JSON.parse(fs.readFileSync(base + 'rig.json'))
+    : compile(base + 'rig.svg', base + 'motion.json');
+  let raw = optimizePup(encodePup(source));
   if (character === 'bird') raw = compactPrecision(raw);
   if (character === 'raccoon') fs.writeFileSync(base + 'animation.compat.pup', raw);
-  const bytes = character === 'fox' ? raw : packPup(raw).bytes;
+  const bytes = packPup(raw).bytes;
   fs.writeFileSync(base + 'animation.pup', bytes);
   console.log(character + ' dance: ' + bytes.length + ' bytes');
 }

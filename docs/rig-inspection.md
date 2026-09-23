@@ -11,7 +11,8 @@ in the selected animation. The available views depend on that data:
   origins are grouped; out-of-view origins are counted rather than relocated.
   Dense views show labels on hover or after selecting a part.
 - **Vector pose banks:** the selected part's current pose index. Fox dance
-  has pose banks, not a skeletal rig, so no artificial skeleton is drawn.
+  combines foreground pose banks with real tail/body transform pivots; no
+  artificial anatomical skeleton is drawn.
 
 The same overlay works with Canvas and SVG. It is separate from animation
 rendering, so toggling inspection does not change the artwork pixels or the
@@ -31,9 +32,10 @@ pivot**, matching the PUP evaluator. Morph channels and pose-bank counts are
 included. This is a readable export of the bindings already inside the PUP;
 the player does not require the JSON to animate the character.
 
-For the five examples with SVG/motion sources, names are mapped through the
-actual optimizer's node remapping and the rebuilt bytes must match the
-published asset. The turnaround bird uses its provided named skeleton.
+For examples with SVG/motion sources, names are mapped through the actual
+optimizer's node remapping. Fox dance uses its compiled `rig.json` manifest.
+Both source forms must rebuild to the exact published bytes before names are
+exported. The turnaround bird uses its provided named skeleton.
 Peek files without authoring IDs use stable node/part indices instead of
 invented names. Bird dance's original precision pass is retained, with exact
 byte-for-byte verification; it is not applied to other files.

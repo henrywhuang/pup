@@ -38,11 +38,22 @@ test('inspection preserves exact binding matrices and signed point weights', asy
 
 test('pose-bank fox is not falsely advertised as a skeleton', () => {
   const puppet=parsePup(fs.readFileSync(file('dance/fox/animation.pup'))), data=describeRig(puppet);
-  assert.equal(data.summary.poseBanks,23);
-  assert.equal(data.summary.animatedNodes,0);
+  assert.equal(data.summary.poseBanks,24);
+  assert.equal(data.summary.animatedNodes,2);
   assert.equal(data.summary.weightedParts,0);
-  assert.deepEqual(inspectionModes(data),['poses']);
-  assert.deepEqual(deformationPoints(puppet,0),[]);
+  assert.equal(data.summary.morphedParts,0);
+  assert.equal(data.summary.semanticJoints,0);
+  assert.deepEqual(inspectionModes(data),['transforms','poses']);
+  const foreground=data.parts.find(p=>p.kind==='pose-bank');
+  assert.deepEqual(deformationPoints(puppet,foreground.index),[]);
+});
+
+test('compiled fox authoring data reproduces the approved file and its real part names', async () => {
+  const data=await inspectFile(file('dance/fox/animation.pup'),{compiled:file('dance/fox/rig.json')});
+  assert.equal(data.asset.sha256,'1492c331a8ea7cc8eab3fdb5c48ee11b2dc8081365c1028dd5e2764d9e90a91f');
+  assert(data.nodes.some(n=>n.name==='tail'));
+  assert(data.parts.some(p=>p.name==='tail-cream'&&p.kind==='transform'));
+  assert(data.parts.some(p=>p.name==='muzzle-nose'&&p.poseCount===56));
 });
 
 test('optimizer inspection reports retained nodes without changing output bytes', () => {

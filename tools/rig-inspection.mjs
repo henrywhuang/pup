@@ -11,12 +11,13 @@ import {optimizePup} from './optimize.mjs';
 import {compactPrecision} from './bird-precision.mjs';
 
 /** Map SVG IDs through the actual lossless optimizer, never by guessed indices. */
-export async function inspectFile(file, {svg, motion, birdPrecision = false, skeleton = null, filename = path.basename(file instanceof URL ? fileURLToPath(file) : file)} = {}) {
+export async function inspectFile(file, {svg, motion, compiled, birdPrecision = false, skeleton = null, filename = path.basename(file instanceof URL ? fileURLToPath(file) : file)} = {}) {
   const bytes = fs.readFileSync(file);
   const puppet = bytes.subarray(0,4).toString() === 'PUC1' ? await parsePuc(bytes) : parsePup(bytes);
   const names = {nodes:{}, shapes:{}};
-  if (svg && motion) {
-    const source = compile(svg, motion), report = {};
+  if (compiled || (svg && motion)) {
+    const source = compiled ? JSON.parse(fs.readFileSync(compiled)) : compile(svg, motion), report = {};
+    if (compiled && source.schema !== 'pup-compiled-art-1') throw new Error('Unsupported compiled rig source: ' + compiled);
     let rebuilt = optimizePup(encodePup(source), report);
     if (birdPrecision) rebuilt = compactPrecision(rebuilt);
     if (!Buffer.from(unpackPup(bytes)).equals(Buffer.from(rebuilt))) throw new Error('Rig source does not match published file: ' + file);
@@ -40,7 +41,8 @@ export async function exportExampleBindings() {
     for (const character of group === 'dance' ? ['fox','raccoon','bird'] : ['fox','raccoon']) {
       const stem = group === 'dance' ? 'examples/dance/' + character : group === 'quiz' ? 'examples/' + character : 'examples/peek';
       const file = stem + '/' + (group === 'peek' ? character : 'animation') + '.pup';
-      const source = group === 'peek' ? {} : {svg:stem+'/rig.svg', motion:stem+'/motion.json'};
+      const source = group === 'peek' ? {} : group === 'dance' && character === 'fox'
+        ? {compiled:stem+'/rig.json'} : {svg:stem+'/rig.svg', motion:stem+'/motion.json'};
       const descriptor = await inspectFile(file, {...source, birdPrecision:group==='dance' && character==='bird', filename:character+'-'+(group==='quiz'?'reactions':group)+'.pup'});
       const output = stem + '/' + (group === 'peek' ? character + '.' : '') + 'bindings.json';
       fs.writeFileSync(output, JSON.stringify(descriptor, null, 2) + '\n'); files.push(output);
