@@ -84,7 +84,7 @@ const dances = [
   {character:'fox',label:'Fox',phase:'Step · turn · clap',
     note:'The approved 76,100-byte release includes rounded turn-entry hands, continuous torso/leg joins and smooth planted-foot settling, repaired cheek edges, balanced stepping and a complete rear tail reusing the opening sway. Compare its 4.633 seconds with the original WebP; the source’s extra final hold is omitted.'},
   {character:'raccoon',label:'Raccoon',phase:'Step · sway · return',
-    note:'The supplied compact release is preserved. Colors come from the SVG; the WebP supplies the motion reference. The tail follows the body with a delayed tip.'},
+    note:'The selected V5 preserves the raised-hand motion, shared wrist curves and fully opaque elbow overlaps. Its 19,476-byte PUP is identical to the Mobile and Web asset. Colors come from the SVG; the WebP supplies the motion reference.'},
   {character:'bird',label:'Bird',phase:'Bird dance',
     note:'The supplied 9,575-byte PUP is preserved. One 4.033-second dance, compared with the original 97-frame WebP on the same clock.'},
 ];

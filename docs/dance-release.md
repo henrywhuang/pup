@@ -1,4 +1,4 @@
-# Dance examples and preview compatibility — 2026-09-23
+# Dance examples and preview compatibility — 2026-09-24
 
 The first two examples are Fox dance and Raccoon dance, with the original
 on the left and PUP on the right. Bird dance is third. The fourth compares seven original bird SVG
@@ -38,7 +38,7 @@ supplied static embedding convention, not arbitrary JavaScript previews.
 | Example | Exact file bytes | Contents |
 | --- | ---: | --- |
 | Fox dance | 76,100 | Approved G, PUPZ / PUP2, 56 foreground poses, 4.633 seconds |
-| Raccoon dance | 22,222 | PUPZ dance, 4.332 seconds; 35,100-byte PUP1 fallback |
+| Raccoon dance | 19,476 | Approved V5, PUPZ dance, 4.332 seconds; 26,496-byte PUP1 fallback |
 | Bird dance | 9,575 | Supplied PUPZ dance, 4.033 seconds; 97-frame WebP reference |
 | Little bird | 68,136 | Original embedded PUC1 turn; separate eight-joint map |
 
@@ -73,19 +73,26 @@ exact bytes; the binding inspector reads its real tail/body transforms and
 foreground pose banks. The superseded SVG/motion snapshots remain in Git
 history. This asset update adds no player runtime code or npm dependency.
 
-The raccoon keeps the selected raised-hand motion and overlapping shoulder
-attachments. Its neck-transition repair separates the foreground palm from
-the upper arm: the original SVG's occlusion corner is excluded from the palm,
-which closes with matching Bézier tangents. This removes the hard cut that
-appeared around 0.236–0.315 seconds. The head, body, full-arm outlines and
-motion are unchanged. The new PUP is 22,222 bytes, 282 bytes more than the
-prior release. No new keyframes, player code or dependencies are needed.
+The selected raccoon is the **approved V5** from the left side of the rig
+comparison page. It is 19,476 bytes, SHA-256
+`73d73a54f6451c6df08624a5a23c2580998d8045dd884f998e4df767be6592c8`.
+Its five-curve shoulder connectors and eight-curve palms share their wrist
+boundary. Tapered internal overlaps and small elbow unions stay fully opaque,
+preventing the arm from acquiring a blended third color. The measured initial
+chin compression is retained. Geometry and motion are copied unchanged from
+the selected V5, including its 37 transform tracks and 4.332-second loop.
+The shared-rig experiments and the fox skeletal experiment are not published.
+
+Mobile, Web and this repository use identical selected files: original Fox
+and Raccoon V5. Both source rigs and binding descriptors are retained; rebuilding
+must reproduce the pinned checksums. This selection changes no player code
+or runtime dependency.
 
 ## Validation
 
 All 24 automated tests pass, covering released bytes, pose selection, packed
 geometry, HTML extraction, skeleton coordinates and existing feedback/peek
-regressions, including shoulder attachment, smooth palm closure and the reported neck-transition interval.
+regressions, including shared wrist boundaries, opaque elbow overlaps and stable palm shapes.
 Rebuilding the examples produces identical bytes.
 
 The preceding 2026-09-22 browser checks covered desktop and 390-pixel mobile layouts, Canvas/SVG,

@@ -14,8 +14,8 @@ test('inspection preserves exact binding matrices and signed point weights', asy
   const puppet = parsePup(bytes), descriptor = await inspectFile(file(path + 'animation.pup'), {
     filename:'raccoon-dance.pup', svg:file(path+'rig.svg'), motion:file(path+'motion.json'),
   });
-  assert.equal(descriptor.summary.weightedParts,12);
-  const part = descriptor.parts.find(p=>p.name==='hand-left-ink');
+  assert.equal(descriptor.summary.weightedParts,15);
+  const part = descriptor.parts.find(p=>p.name==='hand-left-complete');
   assert(part);
   const skin = puppet.art.shapes[part.index].bend;
   assert.deepEqual(part.binding.pivots,Array.from(skin.pivots));

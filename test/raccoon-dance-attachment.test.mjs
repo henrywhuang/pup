@@ -3,91 +3,54 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {parsePup, poseAt} from '../src/index.js';
 
-test('raccoon dance shoulders stay behind the head throughout the motion', () => {
-  const base = new URL('../examples/dance/raccoon/', import.meta.url);
-  const puppet = parsePup(fs.readFileSync(new URL('animation.pup', base)));
-  const ids = [...fs.readFileSync(new URL('rig.svg', base), 'utf8').matchAll(/<path id="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(ids.length, puppet.art.shapes.length);
-  const index = id => { const i = ids.indexOf(id); assert(i >= 0, id); return i; };
-  const head = index('head-脑袋'), geometry = puppet.art.geoms[puppet.art.shapes[head].geom];
-  const outline = [];
-  poseAt(puppet, 0, 'dance');
-  function cubic(a, b, c, d) {
-    for (let k = 1; k <= 80; k++) {
-      const t = k / 80, u = 1 - t;
-      outline.push([0, 1].map(j => u ** 3 * a[j] + 3 * u * u * t * b[j] + 3 * u * t * t * c[j] + t ** 3 * d[j]));
-    }
-  }
-  if (geometry.verts) {
-    const q = puppet.rig.points[puppet.art.shapes[head].geom];
-    for (let i = 0; i < q.length; i += 6) {
-      const j = (i + 6) % q.length;
-      cubic(q.slice(i, i + 2), q.slice(i + 4, i + 6), q.slice(j + 2, j + 4), q.slice(j, j + 2));
-    }
-  } else {
-    let offset = 0, from;
-    const point = () => { const p = geometry.points.slice(offset, offset + 2); offset += 2; return p; };
-    for (const verb of geometry.verbs) {
-      if (verb < 2) { from = point(); outline.push(from); }
-      else if (verb === 2) { const a = point(), b = point(), to = point(); cubic(from, a, b, to); from = to; }
-    }
-  }
-  function inside(x, y) {
-    let result = false;
-    for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
-      const a = outline[i], b = outline[j];
-      if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) result = !result;
-    }
-    return result;
-  }
-  for (const time of [0.466, 0.5, ...Array.from({length:521}, (_, i) => Math.min(4.332, i / 120))]) {
-    poseAt(puppet, time, 'dance');
-    const m = puppet.rig.matrix.subarray(head * 6, head * 6 + 6), det = m[0] * m[3] - m[1] * m[2];
-    for (const side of ['left', 'right']) {
-      const link = puppet.art.shapes[index('shoulder-' + side + '-link')];
-      const points = puppet.rig.points[link.geom];
-      for (const k of [12, 18]) {
-        const x = points[k] - m[4], y = points[k + 1] - m[5];
-        assert(inside((m[3] * x - m[2] * y) / det, (-m[1] * x + m[0] * y) / det), side + ' shoulder detaches at ' + time);
+function scene() {
+  const base=new URL('../examples/dance/raccoon/',import.meta.url);
+  const puppet=parsePup(fs.readFileSync(new URL('animation.pup',base)));
+  const ids=[...fs.readFileSync(new URL('rig.svg',base),'utf8').matchAll(/<path id="([^"]+)"/g)].map(m=>m[1]);
+  assert.equal(ids.length,puppet.art.shapes.length);
+  const index=id=>{const i=ids.indexOf(id);assert(i>=0,id);return i;};
+  const shape=id=>puppet.art.shapes[index(id)];
+  const points=id=>puppet.rig.points[shape(id).geom];
+  return {puppet,ids,index,shape,points};
+}
+function local(m,x,y){const d=m[0]*m[3]-m[1]*m[2],a=x-m[4],b=y-m[5];return[(m[3]*a-m[2]*b)/d,(-m[1]*a+m[0]*b)/d];}
+const near=(a,b,message)=>assert(Math.abs(a-b)<.002,message);
+
+test('raccoon V5 preserves attached wrist curves and fully opaque arm unions',()=>{
+  const {puppet,ids,points,shape}=scene(),references=new Map();
+  for(let k=0;k<=1600;k++){
+    const time=4.332*k/1600;poseAt(puppet,time,'dance');
+    for(let i=0;i<ids.length;i++)if(ids[i].startsWith('hand-'))assert.equal(puppet.rig.fillColor[i]>>>24,255,'Every arm paint must remain opaque');
+    for(const side of['left','right']){
+      const bridge=points(`hand-${side}-complete`),palm=points(`hand-${side}-palm-fill`),ribbon=points(`hand-${side}-internal-overlap`);
+      assert.equal(bridge.length,30);assert.equal(palm.length,48);assert.equal(ribbon.length,24);
+      for(const[b,p]of[[18,0],[24,42],[22,2],[26,46]])for(let axis=0;axis<2;axis++)near(bridge[b+axis],palm[p+axis],`${side} shared wrist at ${time}`);
+      for(const[g,p]of[[0,42],[12,0]])for(let axis=0;axis<2;axis++)near(ribbon[g+axis],palm[p+axis],`${side} tapered overlap endpoint at ${time}`);
+      for(let axis=0;axis<2;axis++){
+        near(ribbon[4+axis]-ribbon[axis],.5*(palm[46+axis]-palm[42+axis]),'Start overlap tangent');
+        near(ribbon[14+axis]-ribbon[12+axis],.5*(palm[2+axis]-palm[axis]),'End overlap tangent');
+      }
+      if(time>.5&&time<3.9){
+        const headNode=shape('head-脑袋').bend.pivots[0],m=puppet.rig.world.subarray(headNode*6,headNode*6+6),root=[...local(m,bridge[0],bridge[1]),...local(m,bridge[6],bridge[7])];
+        if(!references.has(side))references.set(side,root);root.forEach((v,i)=>near(v,references.get(side)[i],`${side} shoulder attached to head`));
       }
     }
   }
 });
 
-test('raccoon palms close smoothly and exclude the exposed shoulder-root corner', () => {
-  const base = new URL('../examples/dance/raccoon/', import.meta.url);
-  const puppet = parsePup(fs.readFileSync(new URL('animation.pup', base)));
-  const ids = [...fs.readFileSync(new URL('rig.svg', base), 'utf8').matchAll(/<path id="([^"]+)"/g)].map(m => m[1]);
-  const shape = id => { const i = ids.indexOf(id); assert(i >= 0, id); return puppet.art.shapes[i]; };
-  function sample(q, i, t) {
-    const a = i * 6, b = (a + 6) % q.length, u = 1 - t;
-    return [0, 1].map(j => u ** 3 * q[a + j] + 3 * u * u * t * q[a + 4 + j] + 3 * u * t * t * q[b + 2 + j] + t ** 3 * q[b + j]);
-  }
-  function contains(q, point) {
-    const polygon = [];
-    for (let i = 0; i < q.length / 6; i++) for (let j = 0; j < 16; j++) polygon.push(sample(q, i, j / 16));
-    let result = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const a = polygon[i], b = polygon[j];
-      if ((a[1] > point[1]) !== (b[1] > point[1]) && point[0] < (b[0] - a[0]) * (point[1] - a[1]) / (b[1] - a[1]) + a[0]) result = !result;
-    }
-    return result;
-  }
-  for (let ms = 0; ms <= 4332; ms++) {
-    poseAt(puppet, ms / 1000, 'dance');
-    for (const side of ['left', 'right']) {
-      const palm = shape('palm-' + side + '-front'), q = puppet.rig.points[palm.geom];
-      // A real closed palm, not a polygon intersected with a hand/head mask.
-      assert.equal(palm.clips.length, 0);
-      assert(puppet.art.geoms[palm.geom].closed);
-      for (const vertex of [0, q.length - 6]) for (const axis of [0, 1]) {
-        assert(Math.abs(q[vertex + 2 + axis] + q[vertex + 4 + axis] - 2 * q[vertex + axis]) < 0.001,
-          side + ' wrist loses tangent continuity at ' + ms + ' ms');
-      }
-      if (ms >= 236 && ms <= 315) {
-        const arm = puppet.rig.points[shape('hand-' + side + '-ink').geom];
-        assert(!contains(q, sample(arm, 1, 0.05)), side + ' shoulder corner leaks into the front palm at ' + ms + ' ms');
-      }
+function polygon(q){const out=[];for(let i=0;i<q.length;i+=6){const j=(i+6)%q.length;for(let k=0;k<14;k++){const t=k/14,u=1-t;out.push([0,1].map(a=>u**3*q[i+a]+3*u*u*t*q[i+4+a]+3*u*t*t*q[j+2+a]+t**3*q[j+a]));}}return out;}
+function selfCrosses(p){const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);for(let i=0;i<p.length;i++)for(let j=i+2;j<p.length;j++){if(i===0&&j===p.length-1)continue;const a=p[i],b=p[(i+1)%p.length],c=p[j],d=p[(j+1)%p.length];if(cross(a,b,c)*cross(a,b,d)<-1e-8&&cross(c,d,a)*cross(c,d,b)<-1e-8)return true;}return false;}
+test('raccoon V5 palms remain smooth, closed and stable in their own frame',()=>{
+  const {puppet,points,shape}=scene(),reference=new Map();
+  assert(puppet.art.clock.clips[0].tracks.every(t=>t[0]<puppet.art.nodeRest.length),'No vertex animation bank');
+  for(let k=0;k<=800;k++){
+    const time=4.332*k/800;poseAt(puppet,time,'dance');
+    for(const side of['left','right']){
+      const s=shape(`hand-${side}-palm-fill`),q=points(`hand-${side}-palm-fill`);
+      assert.equal(s.clips.length,0);assert(puppet.art.geoms[s.geom].closed);
+      assert(!selfCrosses(polygon(q)),`${side} palm self-intersection at ${time}`);
+      for(let i=0;i<q.length;i+=6){const a=[q[i]-q[i+2],q[i+1]-q[i+3]],b=[q[i+4]-q[i],q[i+5]-q[i+1]],den=Math.hypot(...a)*Math.hypot(...b);if(den>.01)assert(Math.abs(a[0]*b[1]-a[1]*b[0])/den<.002,`${side} palm tangent at ${time}`);}
+      if(time>.5&&time<3.9){const n=shape(`hand-${side}-complete`).bend.pivots[5],m=puppet.rig.world.subarray(n*6,n*6+6),p=[];for(let i=0;i<q.length;i+=2)p.push(...local(m,q[i],q[i+1]));if(!reference.has(side))reference.set(side,p);p.forEach((v,i)=>near(v,reference.get(side)[i],`${side} palm shape stays constant`));}
     }
   }
 });

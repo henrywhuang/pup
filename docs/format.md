@@ -66,7 +66,7 @@ No bitmap frames are stored in the PUP examples.
 - **PUPZ:** a lossless byte wrapper around PUP1 or PUP2. It uses a small LZ
   decoder and reversible byte transforms, implemented with typed arrays and
   no package dependencies. `pup pack input.pup output.pup` creates it. The
-  raccoon dance expands from 22,222 B to the exact 35,100 B compatibility file.
+  raccoon dance expands from 19,476 B to the exact 26,496 B compatibility file.
 - **PUC1:** the provided bird preview's existing container. Its gzip payload
   contains a static PUP1 rig, shared sample times, track selection bitmaps and
   quantized delta values. The decoder restores the mirrored turnaround tracks
